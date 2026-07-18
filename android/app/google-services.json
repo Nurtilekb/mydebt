@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "413213640360",
+    "project_id": "for-a-debt",
+    "storage_bucket": "for-a-debt.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:413213640360:android:0c64fda85783738ed0e49d",
+        "android_client_info": {
+          "package_name": "com.example.mydebt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBb4Y03aSPSm-qU08KUmc8UDtD9xKr_enw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
