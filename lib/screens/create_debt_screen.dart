@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../services/debt_service.dart';
@@ -84,20 +85,30 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
                 itemBuilder: (context, index) {
                   final contact = contacts[index];
                   final phone = contact.phones.first.number;
-                  return ListTile(
-                    leading: CircleAvatar(
-                      child: Text(
-                        contact.displayName.isNotEmpty
-                            ? contact.displayName[0].toUpperCase()
-                            : '?',
-                      ),
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.grey.shade200),
                     ),
-                    title: Text(contact.displayName),
-                    subtitle: Text(phone),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _selectContact(contact);
-                    },
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.blue.shade50,
+                        child: Text(
+                          contact.displayName.isNotEmpty
+                              ? contact.displayName[0].toUpperCase()
+                              : '?',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      title: Text(contact.displayName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(phone, style: TextStyle(color: Colors.grey[600])),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _selectContact(contact);
+                      },
+                    ),
                   );
                 },
               ),

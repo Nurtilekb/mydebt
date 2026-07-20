@@ -84,7 +84,7 @@ class Debt {
       'amount': amount,
       'description': description,
       'createdAt': Timestamp.fromDate(createdAt),
-      'closedAt:': closedAt != null ? Timestamp.fromDate(closedAt!) : null,
+      'closedAt': closedAt != null ? Timestamp.fromDate(closedAt!) : null,
       'status': status.name,
       'archived': archived,
       'confirmations': confirmations,

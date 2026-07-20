@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../services/debt_service.dart';
@@ -44,6 +45,9 @@ class _ActiveDebtsScreenState extends State<ActiveDebtsScreen>
             Tab(text: 'Мне должны'),
             Tab(text: 'Я должен'),
           ],
+          labelColor: Theme.of(context).colorScheme.primary,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: Theme.of(context).colorScheme.primary,
         ),
         Expanded(
           child: TabBarView(
@@ -96,11 +100,23 @@ class _DebtList extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.receipt_long, size: 64, color: Colors.grey[300]),
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    CupertinoIcons.doc_text,
+                    size: 40,
+                    color: Colors.grey[400],
+                  ),
+                ),
                 const SizedBox(height: 16),
                 Text(
                   emptyMessage,
-                  style: TextStyle(fontSize: 16, color: Colors.grey[500]),
+                  style: TextStyle(fontSize: 17, color: Colors.grey[500]),
                 ),
               ],
             ),
@@ -142,10 +158,20 @@ class _DebtCard extends StatelessWidget {
         ? (debt.participantName ?? debt.participantPhone)
         : debt.creatorName;
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
@@ -163,11 +189,17 @@ class _DebtCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
-                    backgroundColor: _getStatusColor().withValues(alpha: 0.1),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: _getStatusColor().withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     child: Icon(
-                      isCreator ? Icons.person_add : Icons.person,
+                      isCreator ? CupertinoIcons.person_crop_circle_fill : CupertinoIcons.person_crop_circle,
                       color: _getStatusColor(),
+                      size: 24,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -178,15 +210,15 @@ class _DebtCard extends StatelessWidget {
                         Text(
                           otherName,
                           style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 17,
                           ),
                         ),
                         Text(
                           isCreator ? 'Должен вам' : 'Вы должны',
                           style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 13,
+                            color: Colors.grey[500],
+                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -196,42 +228,50 @@ class _DebtCard extends StatelessWidget {
                     '${debt.amount.toStringAsFixed(0)} ₽',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: isCreator ? Colors.green : Colors.red,
+                      fontSize: 20,
+                      color: isCreator ? Colors.green[600] : Colors.red[600],
                     ),
                   ),
                 ],
               ),
               if (debt.description != null && debt.description!.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                Text(
-                  debt.description!,
-                  style: TextStyle(color: Colors.grey[700]),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    debt.description!,
+                    style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                  ),
                 ),
               ],
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
+                  Icon(CupertinoIcons.clock, size: 14, color: Colors.grey[500]),
                   const SizedBox(width: 4),
                   Text(
                     _formatDate(debt.createdAt),
-                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    style: TextStyle(fontSize: 13, color: Colors.grey[500]),
                   ),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                      horizontal: 10,
+                      vertical: 6,
                     ),
                     decoration: BoxDecoration(
                       color: _getStatusColor().withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       debt.statusLabel,
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 12,
                         color: _getStatusColor(),
                         fontWeight: FontWeight.w600,
                       ),
