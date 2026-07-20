@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
@@ -118,9 +119,9 @@ class _AuthScreenState extends State<AuthScreen> {
               Text(
                 'Учёт долгов между друзьями',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.grey[500],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: Colors.grey[500]),
               ),
               const SizedBox(height: 48),
 
@@ -149,9 +150,9 @@ class _AuthScreenState extends State<AuthScreen> {
                 Text(
                   'Код отправлен на ${_phoneController.text}',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -159,7 +160,11 @@ class _AuthScreenState extends State<AuthScreen> {
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
                   maxLength: 6,
-                  style: const TextStyle(fontSize: 28, letterSpacing: 12, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 28,
+                    letterSpacing: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Код из SMS',
                     counterText: '',
@@ -195,19 +200,29 @@ class _AuthScreenState extends State<AuthScreen> {
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.red.shade50,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
-                      const Icon(CupertinoIcons.exclamationmark_triangle, color: Colors.red, size: 20),
+                      const Icon(
+                        CupertinoIcons.exclamationmark_triangle,
+                        color: Colors.red,
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _error!,
-                          style: const TextStyle(color: Colors.red, fontSize: 14),
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ],

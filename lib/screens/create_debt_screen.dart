@@ -1,11 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/auth_service.dart';
 import '../services/debt_service.dart';
-import '../services/contact_service.dart';
-import '../services/notification_service.dart';
-import 'package:flutter_contacts/flutter_contacts.dart';
+import '../services/auth_service.dart';
 
 class CreateDebtScreen extends StatefulWidget {
   const CreateDebtScreen({super.key});
@@ -16,365 +13,569 @@ class CreateDebtScreen extends StatefulWidget {
 
 class _CreateDebtScreenState extends State<CreateDebtScreen> {
   final _amountController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  final _descController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _contactService = ContactService();
-  bool _loading = false;
-  bool _searchingContact = false;
-  Contact? _selectedContact;
-  String? _participantUid;
-  String? _participantName;
-  String? _error;
+  final _searchController = TextEditingController();
+  String? _selectedFriendPhone;
+  String? _selectedFriendName;
+  String? _selectedFriendUid;
+
+  List<Map<String, dynamic>> _allContacts = [];
+  bool _isLoadingContacts = false;
+  bool _isSearchingPhone = false;
+  String? _phoneSearchError;
+
+  List<Map<String, dynamic>> get _filteredContacts {
+    final query = _searchController.text.trim().toLowerCase();
+    if (query.isEmpty) return _allContacts;
+    return _allContacts.where((c) {
+      final name = (c['name'] as String? ?? '').toLowerCase();
+      final phone = (c['phone'] as String? ?? '').toLowerCase();
+      return name.contains(query) || phone.contains(query);
+    }).toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRegisteredContacts();
+  }
 
   @override
   void dispose() {
     _amountController.dispose();
-    _descriptionController.dispose();
+    _descController.dispose();
     _phoneController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
-  void _openContactPicker() async {
-    setState(() => _searchingContact = true);
-    final contacts = await _contactService.getContacts();
-    setState(() => _searchingContact = false);
+  Future<void> _loadRegisteredContacts() async {
+    setState(() => _isLoadingContacts = true);
+    try {
+      final usersSnap =
+          await context.read<DebtService>().getRegisteredUsers().first;
+      final currentUser = context.read<AuthService>().currentUser;
+      final currentUid = currentUser?.uid ?? '';
 
-    if (!mounted) return;
-
-    if (contacts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Нет контактов или нет разрешения')),
-      );
-      return;
+      setState(() {
+        _allContacts =
+            usersSnap.where((u) => u['uid'] != currentUid).toList();
+        _isLoadingContacts = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingContacts = false);
     }
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.3,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Выберите контакт',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: contacts.length,
-                itemBuilder: (context, index) {
-                  final contact = contacts[index];
-                  final phone = contact.phones.first.number;
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.blue.shade50,
-                        child: Text(
-                          contact.displayName.isNotEmpty
-                              ? contact.displayName[0].toUpperCase()
-                              : '?',
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                      title: Text(contact.displayName, style: const TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: Text(phone, style: TextStyle(color: Colors.grey[600])),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _selectContact(contact);
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
-  void _selectContact(Contact contact) {
-    setState(() {
-      _selectedContact = contact;
-      _phoneController.text = _contactService.formatPhone(
-        contact.phones.first.number,
-      );
-      _participantName = contact.displayName;
-    });
-    _lookupParticipant();
-  }
-
-  void _lookupParticipant() async {
-    final phone = _phoneController.text.trim();
-    if (phone.isEmpty) return;
-
-    setState(() => _loading = true);
-
-    final debtService = context.read<DebtService>();
-    final user = await debtService.findUserByPhone(phone);
-
-    setState(() {
-      _loading = false;
-      _participantUid = user?.uid;
-      if (user != null && _participantName == null) {
-        _participantName = user.displayName ?? phone;
-      }
-    });
-  }
-
-  void _createDebt() async {
-    final amount = double.tryParse(_amountController.text.trim());
-    if (amount == null || amount <= 0) {
-      setState(() => _error = 'Введите корректную сумму');
-      return;
-    }
-
+  Future<void> _searchByPhone() async {
     final phone = _phoneController.text.trim();
     if (phone.isEmpty) {
-      setState(() => _error = 'Выберите контакт или введите номер');
+      setState(() => _phoneSearchError = 'Введите номер телефона');
       return;
     }
 
     setState(() {
-      _loading = true;
-      _error = null;
+      _isSearchingPhone = true;
+      _phoneSearchError = null;
     });
 
     try {
-      final authService = context.read<AuthService>();
       final debtService = context.read<DebtService>();
-      final user = authService.currentUser;
+      final user = await debtService.findUserByPhone(phone);
 
-      if (user == null) {
-        setState(() => _error = 'Необходима авторизация');
-        return;
-      }
+      if (!mounted) return;
 
-      await debtService.createDebt(
-        creatorUid: user.uid,
-        creatorPhone: user.phoneNumber!,
-        creatorName: user.displayName ?? user.phoneNumber!,
-        participantPhone: phone,
-        participantName: _participantName,
-        participantUid: _participantUid,
-        amount: amount,
-        description: _descriptionController.text.trim().isEmpty
-            ? null
-            : _descriptionController.text.trim(),
-      );
-
-      // Send notification to participant
-      if (_participantUid != null) {
-        final participantDoc = await debtService.findUserByPhone(phone);
-        if (participantDoc?.fcmToken != null) {
-          await NotificationService().sendNotification(
-            fcmToken: participantDoc!.fcmToken!,
-            title: 'Новый долг',
-            body: '${user.displayName ?? user.phoneNumber} создал долг на ${amount.toStringAsFixed(0)} ₽',
-          );
+      if (user != null) {
+        final currentUser = context.read<AuthService>().currentUser;
+        if (user['uid'] == currentUser?.uid) {
+          setState(() {
+            _isSearchingPhone = false;
+            _phoneSearchError = 'Это ваш номер';
+          });
+          return;
         }
-      }
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Долг создан')),
-        );
+        setState(() {
+          _selectedFriendPhone = user['phone'];
+          _selectedFriendName =
+              user['displayName'] ?? user['name'] ?? 'Без имени';
+          _selectedFriendUid = user['uid'];
+          _isSearchingPhone = false;
+          _phoneSearchError = null;
+        });
         Navigator.pop(context);
+      } else {
+        setState(() {
+          _isSearchingPhone = false;
+          _phoneSearchError = 'Пользователь не зарегистрирован';
+        });
       }
     } catch (e) {
-      setState(() => _error = 'Ошибка: $e');
-    } finally {
-      if (mounted) setState(() => _loading = false);
+      setState(() {
+        _isSearchingPhone = false;
+        _phoneSearchError = 'Ошибка поиска';
+      });
     }
+  }
+
+  void _selectContact(Map<String, dynamic> contact) {
+    setState(() {
+      _selectedFriendPhone = contact['phone'];
+      _selectedFriendName = contact['name'];
+      _selectedFriendUid = contact['uid'];
+    });
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF2F2F7),
       appBar: AppBar(
-        title: const Text('Новый долг'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(CupertinoIcons.back, color: Colors.blue),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Новый долг',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+        ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Amount field
-            TextField(
-              controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              autofocus: true,
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                hintText: '0 ₽',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+            // Selected contact display
+            GestureDetector(
+              onTap: _showContactPicker,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _selectedFriendName != null
+                        ? Colors.blue
+                        : Colors.grey[300]!,
+                    width: _selectedFriendName != null ? 2 : 1,
+                  ),
                 ),
-                prefixIcon: const Icon(Icons.attach_money),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: _selectedFriendName != null
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _selectedFriendName!,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _selectedFriendPhone ?? '',
+                                  style: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : const Text(
+                              'Выбрать контакт',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 17,
+                              ),
+                            ),
+                    ),
+                    const Icon(
+                      CupertinoIcons.chevron_right,
+                      color: Colors.grey,
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
+
+            // Amount
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: TextField(
+                controller: _amountController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  hintText: 'Сумма',
+                  hintStyle: TextStyle(color: Colors.grey),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
 
             // Description
-            TextField(
-              controller: _descriptionController,
-              decoration: InputDecoration(
-                hintText: 'Описание (необязательно)',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: const Icon(Icons.description),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[300]!),
               ),
-            ),
-            const SizedBox(height: 24),
-
-            // Contact selection
-            Text(
-              'Кому должны',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Contact picker button
-            OutlinedButton.icon(
-              onPressed: _searchingContact ? null : _openContactPicker,
-              icon: _searchingContact
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.contacts),
-              label: Text(_selectedContact != null
-                  ? _selectedContact!.displayName
-                  : 'Выбрать из контактов'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.all(16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              child: TextField(
+                controller: _descController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  hintText: 'Комментарий (необязательно)',
+                  hintStyle: TextStyle(color: Colors.grey),
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-
-            // Or manual phone input
-            TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                hintText: 'Или введите номер',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: const Icon(Icons.phone),
-                suffixIcon: _phoneController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.search),
-                        onPressed: _lookupParticipant,
-                      )
-                    : null,
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _selectedContact = null;
-                  _participantName = null;
-                });
-              },
-            ),
-
-            // Participant status
-            if (_participantUid != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  children: [
-                    const Icon(Icons.check_circle, color: Colors.green, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Пользователь найден в приложении',
-                      style: TextStyle(color: Colors.green[700], fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-
-            if (_participantUid == null && _phoneController.text.isNotEmpty && !_loading)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Colors.grey[500], size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Пользователь не зарегистрирован',
-                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-
-            const SizedBox(height: 24),
-
-            // Error
-            if (_error != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Text(
-                  _error!,
-                  style: const TextStyle(color: Colors.red),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+            const SizedBox(height: 30),
 
             // Create button
             ElevatedButton(
-              onPressed: _loading ? null : _createDebt,
+              onPressed: _createDebt,
               style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                elevation: 0,
               ),
-              child: _loading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Создать долг', style: TextStyle(fontSize: 16)),
+              child: const Text(
+                'Я должен',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _showContactPicker() {
+    _phoneController.clear();
+    _searchController.clear();
+    setState(() {
+      _phoneSearchError = null;
+      _isSearchingPhone = false;
+    });
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.75,
+        minChildSize: 0.5,
+        maxChildSize: 0.9,
+        builder: (ctx, scrollController) => StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                children: [
+                  // Drag handle
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+
+                  // Title
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      'Выберите контакт',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+
+                  // ========== SECTION 1: Search contacts by name ==========
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Поиск по имени...',
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setSheetState(() {});
+                                },
+                              )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                      onChanged: (_) => setSheetState(() {}),
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Registered contacts list
+                  if (_isLoadingContacts)
+                    const Expanded(
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (_allContacts.isEmpty)
+                    Expanded(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Text(
+                            'Нет зарегистрированных контактов.\nДобавьте по номеру телефона ниже.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: Colors.grey[500], fontSize: 15),
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: _filteredContacts.isEmpty
+                          ? Center(
+                              child: Text(
+                                'Контакты не найдены',
+                                style: TextStyle(
+                                    color: Colors.grey[400], fontSize: 16),
+                              ),
+                            )
+                          : ListView.builder(
+                              controller: scrollController,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: _filteredContacts.length,
+                              itemBuilder: (ctx, i) {
+                                final contact = _filteredContacts[i];
+                                final isSelected =
+                                    _selectedFriendUid == contact['uid'];
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 6),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? Colors.blue[50]
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? Colors.blue
+                                          : Colors.grey.shade200,
+                                    ),
+                                  ),
+                                  child: ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundColor: isSelected
+                                          ? Colors.blue[200]
+                                          : Colors.blue[100],
+                                      child: Text(
+                                        (contact['name'] as String).isNotEmpty
+                                            ? (contact['name'] as String)[0]
+                                                .toUpperCase()
+                                            : '?',
+                                        style: TextStyle(
+                                          color: isSelected
+                                              ? Colors.white
+                                              : Colors.blue[700],
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    title: Text(
+                                      contact['name'],
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      contact['phone'],
+                                      style: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    trailing: isSelected
+                                        ? const Icon(Icons.check_circle,
+                                            color: Colors.blue)
+                                        : null,
+                                    onTap: () {
+                                      setSheetState(() {});
+                                      _selectContact(contact);
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+
+                  // ========== SECTION 2: Add by phone number ==========
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      border: Border(
+                        top: BorderSide(color: Colors.grey.shade200),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Или добавьте по номеру телефона',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _phoneController,
+                                keyboardType: TextInputType.phone,
+                                decoration: InputDecoration(
+                                  hintText: '+7 (999) 123-45-67',
+                                  prefixIcon: const Icon(Icons.phone,
+                                      size: 20),
+                                  errorText: _phoneSearchError,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 12,
+                                  ),
+                                  isDense: true,
+                                ),
+                                onSubmitted: (_) => _searchByPhone(),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            SizedBox(
+                              height: 46,
+                              child: ElevatedButton(
+                                onPressed:
+                                    _isSearchingPhone ? null : _searchByPhone,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: _isSearchingPhone
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Text('Добавить'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _createDebt() async {
+    final amountText = _amountController.text.trim();
+    if (amountText.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Введите сумму')),
+      );
+      return;
+    }
+    if (_selectedFriendPhone == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Выберите контакт')),
+      );
+      return;
+    }
+
+    final amount = double.tryParse(amountText);
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Введите корректную сумму')),
+      );
+      return;
+    }
+
+    try {
+      final user = context.read<AuthService>().currentUser;
+      if (user == null) return;
+
+      final debtService = context.read<DebtService>();
+      await debtService.createDebt(
+        creatorUid: user.uid,
+        creatorPhone: user.phoneNumber ?? '',
+        creatorName: user.displayName ?? 'Пользователь',
+        participantPhone: _selectedFriendPhone!,
+        participantName: _selectedFriendName,
+        participantUid: _selectedFriendUid,
+        amount: amount,
+        description: _descController.text.trim().isEmpty
+            ? null
+            : _descController.text.trim(),
+      );
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка: $e')),
+        );
+      }
+    }
   }
 }

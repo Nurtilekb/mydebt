@@ -14,9 +14,9 @@ class Debt {
   final String? description;
   final DateTime createdAt;
   final DateTime? closedAt;
-  DebtStatus status;
-  bool archived;
+  final DebtStatus status;
   final Map<String, bool> confirmations;
+  final bool archived;
 
   Debt({
     required this.id,
@@ -28,24 +28,24 @@ class Debt {
     this.participantName,
     required this.amount,
     this.description,
-    DateTime? createdAt,
+    required this.createdAt,
     this.closedAt,
     this.status = DebtStatus.pending,
+    this.confirmations = const {},
     this.archived = false,
-    Map<String, bool>? confirmations,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        confirmations = confirmations ?? {'creator': false, 'participant': false};
+  });
 
-  bool get isClosed => status == DebtStatus.closed || status == DebtStatus.rejected;
+  bool get isClosed =>
+      status == DebtStatus.closed || status == DebtStatus.rejected;
 
   String get statusLabel {
     switch (status) {
       case DebtStatus.pending:
         return 'Ожидает';
       case DebtStatus.confirmedByCreator:
-        return 'Подтверждено вами';
+        return 'Подтверждено создателем';
       case DebtStatus.confirmedByParticipant:
-        return 'Подтверждено другом';
+        return 'Подтверждено участником';
       case DebtStatus.closed:
         return 'Закрыт';
       case DebtStatus.rejected:
@@ -53,23 +53,38 @@ class Debt {
     }
   }
 
-  factory Debt.fromMap(Map<String, dynamic> map) {
+  factory Debt.fromMap(Map<String, dynamic> data) {
     return Debt(
-      id: map['id'] ?? '',
-      creatorUid: map['creatorUid'] ?? '',
-      creatorPhone: map['creatorPhone'] ?? '',
-      creatorName: map['creatorName'] ?? '',
-      participantPhone: map['participantPhone'] ?? '',
-      participantUid: map['participantUid'],
-      participantName: map['participantName'],
-      amount: (map['amount'] ?? 0).toDouble(),
-      description: map['description'],
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      closedAt: (map['closedAt'] as Timestamp?)?.toDate(),
-      status: _parseStatus(map['status']),
-      archived: map['archived'] ?? false,
-      confirmations: Map<String, bool>.from(map['confirmations'] ?? {'creator': false, 'participant': false}),
+      id: data['id'] ?? '',
+      creatorUid: data['creatorUid'] ?? '',
+      creatorPhone: data['creatorPhone'] ?? '',
+      creatorName: data['creatorName'] ?? '',
+      participantPhone: data['participantPhone'] ?? '',
+      participantUid: data['participantUid'],
+      participantName: data['participantName'],
+      amount: (data['amount'] ?? 0).toDouble(),
+      description: data['description'],
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      closedAt: (data['closedAt'] as Timestamp?)?.toDate(),
+      status: _parseStatus(data['status']),
+      confirmations: Map<String, bool>.from(data['confirmations'] ?? {}),
+      archived: data['archived'] ?? false,
     );
+  }
+
+  static DebtStatus _parseStatus(String? value) {
+    switch (value) {
+      case 'confirmedByCreator':
+        return DebtStatus.confirmedByCreator;
+      case 'confirmedByParticipant':
+        return DebtStatus.confirmedByParticipant;
+      case 'closed':
+        return DebtStatus.closed;
+      case 'rejected':
+        return DebtStatus.rejected;
+      default:
+        return DebtStatus.pending;
+    }
   }
 
   Map<String, dynamic> toMap() {
@@ -86,23 +101,8 @@ class Debt {
       'createdAt': Timestamp.fromDate(createdAt),
       'closedAt': closedAt != null ? Timestamp.fromDate(closedAt!) : null,
       'status': status.name,
-      'archived': archived,
       'confirmations': confirmations,
+      'archived': archived,
     };
-  }
-
-  static DebtStatus _parseStatus(String? value) {
-    switch (value) {
-      case 'confirmedByCreator':
-        return DebtStatus.confirmedByCreator;
-      case 'confirmedByParticipant':
-        return DebtStatus.confirmedByParticipant;
-      case 'closed':
-        return DebtStatus.closed;
-      case 'rejected':
-        return DebtStatus.rejected;
-      default:
-        return DebtStatus.pending;
-    }
   }
 }
