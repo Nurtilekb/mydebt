@@ -27,34 +27,32 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Должок'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Выход'),
-                  content: const Text('Выйти из аккаунта?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Отмена'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text('Выйти'),
-                    ),
-                  ],
-                ),
-              );
-              if (confirmed == true && mounted) {
-                await authService.signOut();
-              }
-            },
-          ),
-        ],
+        leading: IconButton(
+          icon: const Icon(CupertinoIcons.person_circle),
+          onPressed: () async {
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Выход'),
+                content: const Text('Выйти из аккаунта?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Отмена'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    child: const Text('Выйти'),
+                  ),
+                ],
+              ),
+            );
+            if (confirmed == true && mounted) {
+              await authService.signOut();
+            }
+          },
+        ),
       ),
       body: _screens[_currentIndex],
       bottomNavigationBar: NavigationBar(
@@ -64,13 +62,13 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long),
+            icon: Icon(CupertinoIcons.doc_text),
+            selectedIcon: Icon(CupertinoIcons.doc_text_fill),
             label: 'Активные',
           ),
           NavigationDestination(
-            icon: Icon(Icons.history_outlined),
-            selectedIcon: Icon(Icons.history),
+            icon: Icon(CupertinoIcons.time_solid),
+            selectedIcon: Icon(CupertinoIcons.time_solid),
             label: 'История',
           ),
         ],
@@ -82,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
             MaterialPageRoute(builder: (_) => const CreateDebtScreen()),
           );
         },
-        icon: const Icon(Icons.add),
+        icon: const Icon(CupertinoIcons.plus),
         label: const Text('Новый долг'),
       ),
     );

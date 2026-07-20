@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../services/debt_service.dart';
@@ -31,12 +32,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
           child: TextField(
             decoration: InputDecoration(
               hintText: 'Поиск по описанию...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              prefixIcon: const Icon(CupertinoIcons.search),
               suffixIcon: PopupMenuButton<String>(
-                icon: const Icon(Icons.sort),
+                icon: const Icon(CupertinoIcons.sort_up_circle),
                 onSelected: (value) {
                   setState(() => _sortBy = value);
                 },
@@ -82,11 +80,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.history, size: 64, color: Colors.grey[300]),
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          CupertinoIcons.time_solid,
+                          size: 40,
+                          color: Colors.grey[400],
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'Нет завершённых долгов',
-                        style: TextStyle(fontSize: 16, color: Colors.grey[500]),
+                        style: TextStyle(fontSize: 17, color: Colors.grey[500]),
                       ),
                     ],
                   ),
@@ -125,25 +135,38 @@ class _HistoryCard extends StatelessWidget {
     final isClosed = debt.status == DebtStatus.closed;
     final color = isClosed ? Colors.green : Colors.red;
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.1),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(14),
+          ),
           child: Icon(
-            isClosed ? Icons.check_circle : Icons.cancel,
+            isClosed ? CupertinoIcons.checkmark_circle_fill : CupertinoIcons.xmark_circle_fill,
             color: color,
+            size: 24,
           ),
         ),
-        title: Text(otherName),
+        title: Text(otherName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
         subtitle: Text(
           '${isClosed ? 'Закрыт' : 'Отклонён'} · ${_formatDate(debt.closedAt ?? debt.createdAt)}',
+          style: TextStyle(color: Colors.grey[500], fontSize: 14),
         ),
         trailing: Text(
           '${debt.amount.toStringAsFixed(0)} ₽',
           style: TextStyle(
             fontWeight: FontWeight.bold,
+            fontSize: 18,
             color: color,
           ),
         ),
@@ -164,6 +187,7 @@ class _HistoryCard extends StatelessWidget {
   void _showDetails(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -186,7 +210,9 @@ class _HistoryCard extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'Детали долга',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 16),
             _DetailRow(label: 'Сумма', value: '${debt.amount.toStringAsFixed(0)} ₽'),
@@ -207,22 +233,22 @@ class _HistoryCard extends StatelessWidget {
   }
 
   void _confirmDelete(BuildContext context) {
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => CupertinoAlertDialog(
         title: const Text('Удалить из истории?'),
         content: const Text('Это действие нельзя отменить'),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(context),
             child: const Text('Отмена'),
           ),
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () async {
               await context.read<DebtService>().deleteDebt(debt.id);
               if (context.mounted) Navigator.pop(context);
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            isDestructiveAction: true,
             child: const Text('Удалить'),
           ),
         ],
@@ -244,8 +270,8 @@ class _DetailRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: Colors.grey[600])),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 15)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
         ],
       ),
     );
