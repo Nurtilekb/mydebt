@@ -1,22 +1,12 @@
 ```
-# Flutter/Dart specific
+# Dependencies
 .dart_tool/
 .packages
-.pub-cache/
+.pub/
 pubspec.lock
 
-# Build outputs
+# Build
 build/
-*.apk
-*.aab
-*.ipa
-*.app
-
-# IDE files
-.idea/
-.vscode/
-*.swp
-*.swo
 
 # Logs
 *.log
@@ -26,6 +16,13 @@ build/
 .env.local
 *.env.*
 
-# Dependencies
-node_modules/
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
 ```

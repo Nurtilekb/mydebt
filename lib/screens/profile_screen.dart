@@ -2,9 +2,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../models/user_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  Future<UserModel?> _getUserData(String uid) async {
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return UserModel.fromMap(doc.data()!);
+      }
+    } catch (e) {
+      // Error fetching user data
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,18 +74,66 @@ class ProfileScreen extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text(
-                          user?.phoneNumber ?? '',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 14,
+                        if (user?.email != null && user!.email!.isNotEmpty) ...[
+                          Text(
+                            user.email!,
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 14,
+                            ),
                           ),
-                        ),
+                        ],
+                        if (user?.phoneNumber != null && user!.phoneNumber!.isNotEmpty) ...[
+                          Text(
+                            user.phoneNumber!,
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 20),
+            FutureBuilder<UserModel?>(
+              future: user != null ? _getUserData(user.uid) : Future.value(null),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                }
+                final userData = snapshot.data;
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Данные аккаунта',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildDataRow('ID', user?.uid ?? 'N/A'),
+                      const SizedBox(height: 8),
+                      _buildDataRow('Имя', user?.displayName ?? 'Не указано'),
+                      const SizedBox(height: 8),
+                      _buildDataRow('Email', user?.email ?? 'Не указано'),
+                      const SizedBox(height: 8),
+                      _buildDataRow('Телефон', user?.phoneNumber ?? 'Не указано'),
+                    ],
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -126,6 +188,28 @@ class ProfileScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDataRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 14,
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }
