@@ -39,13 +39,22 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
         }
 
         final isCreator = user.uid == debt.creatorUid;
+        final myRole = isCreator ? 'creator' : 'participant';
+        final myConfirmed = debt.confirmations[myRole] == true;
+        final otherConfirmed =
+            debt.confirmations[myRole == 'creator' ? 'participant' : 'creator'] ==
+                true;
+
+        // Other person's info
         final otherName = isCreator
             ? (debt.participantName ?? debt.participantPhone)
             : debt.creatorName;
         final otherPhone =
             isCreator ? debt.participantPhone : debt.creatorPhone;
-        final myRole = isCreator ? 'creator' : 'participant';
-        final myConfirmed = debt.confirmations[myRole] == true;
+
+        final confirmButtonText = isCreator
+            ? 'Я получил, подтверждаю'
+            : 'Я оплатил, подтверждаю';
 
         return Scaffold(
           appBar: AppBar(
@@ -106,15 +115,25 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 8),
+                        Text(
+                          isCreator
+                              ? 'Вы дали в долг'
+                              : 'Вам дали в долг',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 24),
 
-                // Participant info
+                // Other person info
                 Text(
-                  isCreator ? 'Кому вы должны' : 'Кто вам должен',
+                  isCreator ? 'Кому вы дали' : 'Кто вам дал',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -189,7 +208,11 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                               : Colors.grey,
                         ),
                         title: Text(debt.creatorName),
-                        subtitle: const Text('Создатель'),
+                        subtitle: Text(
+                          debt.confirmations['creator'] == true
+                              ? 'Подтвердил'
+                              : 'Ожидает',
+                        ),
                       ),
                       const Divider(height: 1),
                       ListTile(
@@ -204,7 +227,11 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                         title: Text(
                           debt.participantName ?? debt.participantPhone,
                         ),
-                        subtitle: const Text('Участник'),
+                        subtitle: Text(
+                          debt.confirmations['participant'] == true
+                              ? 'Подтвердил'
+                              : 'Ожидает',
+                        ),
                       ),
                     ],
                   ),
@@ -243,16 +270,19 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
                         child: Row(
                           children: [
-                            Icon(Icons.check_circle, color: Colors.green),
-                            SizedBox(width: 12),
+                            const Icon(Icons.check_circle,
+                                color: Colors.green),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Вы подтвердили оплату. Ожидается подтверждение другой стороны.',
-                                style: TextStyle(color: Colors.green),
+                                otherConfirmed
+                                    ? 'Обе стороны подтвердили. Долг закрыт.'
+                                    : 'Вы подтвердили. Ожидается подтверждение другой стороны.',
+                                style: const TextStyle(color: Colors.green),
                               ),
                             ),
                           ],
@@ -263,39 +293,43 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // "I paid the debt" confirm button
-                        ElevatedButton(
-                          onPressed: () => _confirmPaid(debt),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Я оплатил долг',
-                            style: TextStyle(
+                        // Main confirm button
+                        ElevatedButton.icon(
+                          onPressed: () => _confirmDebt(debt),
+                          icon: const Icon(Icons.check_circle_outline,
+                              size: 22),
+                          label: Text(
+                            confirmButtonText,
+                            style: const TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 12),
-                        // Cancel / reject button
+                        // Reject button
                         OutlinedButton(
                           onPressed: () => _rejectDebt(debt),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.red,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             side: const BorderSide(color: Colors.red),
                           ),
                           child: const Text(
-                            'Отмена',
+                            'Отклонить',
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
@@ -333,17 +367,16 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
     return '${date.day}.${date.month.toString().padLeft(2, '0')}.${date.year}';
   }
 
-  void _confirmPaid(Debt debt) async {
+  void _confirmDebt(Debt debt) async {
     final user = context.read<AuthService>().currentUser;
     if (user == null) return;
 
-    final role =
-        user.uid == debt.creatorUid ? 'creator' : 'participant';
+    final role = user.uid == debt.creatorUid ? 'creator' : 'participant';
     await context.read<DebtService>().confirmDebt(debt.id, role);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Оплата подтверждена')),
+        const SnackBar(content: Text('Подтверждено')),
       );
     }
   }

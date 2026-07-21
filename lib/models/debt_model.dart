@@ -1,6 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum DebtStatus { pending, confirmedByCreator, confirmedByParticipant, closed, rejected }
+enum DebtStatus {
+  pending,
+  confirmedByCreator,
+  confirmedByParticipant,
+  closed,
+  rejected,
+}
 
 class Debt {
   final String id;

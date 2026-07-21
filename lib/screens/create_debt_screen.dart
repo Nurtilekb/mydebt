@@ -260,7 +260,7 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
                 elevation: 0,
               ),
               child: const Text(
-                'Я должен',
+                'Мне должны',
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
             ),

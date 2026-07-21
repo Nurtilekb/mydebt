@@ -53,17 +53,19 @@ class _ActiveDebtsScreenState extends State<ActiveDebtsScreen>
           child: TabBarView(
             controller: _tabController,
             children: [
-              // Debts where user is creator (others owe me)
+              // Tab 1: "Мне должны" — I'm creator, I lent money, others owe me
               _DebtList(
                 stream: debtService.getMyCreatedDebts(phone),
-                role: 'creator',
+                myRole: 'creator',
                 emptyMessage: 'Нет долгов, которые вам должны',
+                confirmLabel: 'Я получил, подтверждаю',
               ),
-              // Debts where user is participant (I owe others)
+              // Tab 2: "Я должен" — I'm participant, someone lent to me, I owe
               _DebtList(
                 stream: debtService.getParticipantDebts(phone),
-                role: 'participant',
+                myRole: 'participant',
                 emptyMessage: 'Нет долгов, которые вы должны',
+                confirmLabel: 'Я оплатил, подтверждаю',
               ),
             ],
           ),
@@ -75,13 +77,15 @@ class _ActiveDebtsScreenState extends State<ActiveDebtsScreen>
 
 class _DebtList extends StatelessWidget {
   final Stream<List<Debt>> stream;
-  final String role;
+  final String myRole;
   final String emptyMessage;
+  final String confirmLabel;
 
   const _DebtList({
     required this.stream,
-    required this.role,
+    required this.myRole,
     required this.emptyMessage,
+    required this.confirmLabel,
   });
 
   @override
@@ -128,7 +132,11 @@ class _DebtList extends StatelessWidget {
           itemCount: debts.length,
           itemBuilder: (context, index) {
             final debt = debts[index];
-            return _DebtCard(debt: debt, role: role);
+            return _DebtCard(
+              debt: debt,
+              myRole: myRole,
+              confirmLabel: confirmLabel,
+            );
           },
         );
       },
@@ -138,9 +146,14 @@ class _DebtList extends StatelessWidget {
 
 class _DebtCard extends StatelessWidget {
   final Debt debt;
-  final String role;
+  final String myRole;
+  final String confirmLabel;
 
-  const _DebtCard({required this.debt, required this.role});
+  const _DebtCard({
+    required this.debt,
+    required this.myRole,
+    required this.confirmLabel,
+  });
 
   Color _getStatusColor() {
     if (debt.status == DebtStatus.pending) return Colors.orange;
@@ -152,11 +165,15 @@ class _DebtCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.read<AuthService>().currentUser;
-    final isCreator = user?.phoneNumber == debt.creatorPhone;
-    final otherName = isCreator
+    final myConfirmed = debt.confirmations[myRole] == true;
+
+    // Determine the other person's name based on my role
+    final otherName = myRole == 'creator'
         ? (debt.participantName ?? debt.participantPhone)
         : debt.creatorName;
+
+    // Color coding: green for money I'll get, red for money I owe
+    final isCreditor = myRole == 'creator';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -197,7 +214,9 @@ class _DebtCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
-                      isCreator ? CupertinoIcons.person_crop_circle_fill : CupertinoIcons.person_crop_circle,
+                      isCreditor
+                          ? CupertinoIcons.arrow_down_left
+                          : CupertinoIcons.arrow_up_right,
                       color: _getStatusColor(),
                       size: 24,
                     ),
@@ -215,7 +234,7 @@ class _DebtCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          isCreator ? 'Должен вам' : 'Вы должны',
+                          isCreditor ? 'Должен вам' : 'Вы должны',
                           style: TextStyle(
                             color: Colors.grey[500],
                             fontSize: 14,
@@ -229,12 +248,13 @@ class _DebtCard extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
-                      color: isCreator ? Colors.green[600] : Colors.red[600],
+                      color: isCreditor ? Colors.green[600] : Colors.red[600],
                     ),
                   ),
                 ],
               ),
-              if (debt.description != null && debt.description!.isNotEmpty) ...[
+              if (debt.description != null &&
+                  debt.description!.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Container(
                   width: double.infinity,
@@ -252,33 +272,82 @@ class _DebtCard extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(CupertinoIcons.clock, size: 14, color: Colors.grey[500]),
+                  Icon(CupertinoIcons.clock,
+                      size: 14, color: Colors.grey[500]),
                   const SizedBox(width: 4),
                   Text(
                     _formatDate(debt.createdAt),
                     style: TextStyle(fontSize: 13, color: Colors.grey[500]),
                   ),
                   const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
+                  if (myConfirmed)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        'Вы подтвердили',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.green,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor().withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        debt.statusLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _getStatusColor(),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor().withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      debt.statusLabel,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: _getStatusColor(),
+                ],
+              ),
+
+              // Confirm button for this debt
+              if (!debt.isClosed && !myConfirmed) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _confirmDebt(context),
+                    icon: const Icon(Icons.check_circle_outline, size: 20),
+                    label: Text(
+                      confirmLabel,
+                      style: const TextStyle(
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ],
           ),
         ),
@@ -288,5 +357,18 @@ class _DebtCard extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     return '${date.day}.${date.month.toString().padLeft(2, '0')}.${date.year}';
+  }
+
+  void _confirmDebt(BuildContext context) async {
+    final user = context.read<AuthService>().currentUser;
+    if (user == null) return;
+
+    await context.read<DebtService>().confirmDebt(debt.id, myRole);
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Подтверждено')),
+      );
+    }
   }
 }

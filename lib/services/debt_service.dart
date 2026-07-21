@@ -7,19 +7,53 @@ class DebtService {
   CollectionReference get _debtsRef => _firestore.collection('debts');
   CollectionReference get _usersRef => _firestore.collection('users');
 
-  String normalizePhone(String phone) {
-    return phone.replaceAll(RegExp(r'[^\d+]'), '');
+  String _digitsOnly(String phone) {
+    return phone.replaceAll(RegExp(r'\D'), '');
+  }
+
+  // ── Users ──
+
+  Stream<List<Map<String, dynamic>>> getRegisteredUsers() {
+    return _usersRef.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        final phone = (data['phone'] ?? '').toString();
+        final name = (data['displayName'] ?? data['name'] ?? '').toString();
+        return {
+          'uid': doc.id,
+          'name': name.isNotEmpty ? name : phone,
+          'phone': phone,
+        };
+      }).toList();
+    });
   }
 
   Future<Map<String, dynamic>?> findUserByPhone(String phone) async {
-    final normalized = normalizePhone(phone);
-    final snapshot =
-        await _usersRef.where('phone', isEqualTo: normalized).limit(1).get();
+    final queryDigits = _digitsOnly(phone);
+    if (queryDigits.isEmpty) return null;
+
+    // Try exact match first
+    var snapshot =
+        await _usersRef.where('phone', isEqualTo: phone).limit(1).get();
     if (snapshot.docs.isNotEmpty) {
-      return snapshot.docs.first.data() as Map<String, dynamic>;
+      final data = snapshot.docs.first.data() as Map<String, dynamic>;
+      return {'uid': snapshot.docs.first.id, ...data};
     }
+
+    // Fallback: compare digits only across all users
+    snapshot = await _usersRef.get();
+    for (final doc in snapshot.docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      final storedDigits = _digitsOnly((data['phone'] ?? '').toString());
+      if (storedDigits == queryDigits) {
+        return {'uid': doc.id, ...data};
+      }
+    }
+
     return null;
   }
+
+  // ── Debts ──
 
   Future<void> createDebt({
     required String creatorUid,
@@ -35,9 +69,9 @@ class DebtService {
     final debt = Debt(
       id: docRef.id,
       creatorUid: creatorUid,
-      creatorPhone: normalizePhone(creatorPhone),
+      creatorPhone: _digitsOnly(creatorPhone),
       creatorName: creatorName,
-      participantPhone: normalizePhone(participantPhone),
+      participantPhone: _digitsOnly(participantPhone),
       participantUid: participantUid,
       participantName: participantName,
       amount: amount,
@@ -48,7 +82,7 @@ class DebtService {
   }
 
   Stream<List<Debt>> getMyCreatedDebts(String userPhone) {
-    final normalized = normalizePhone(userPhone);
+    final normalized = _digitsOnly(userPhone);
     return _debtsRef
         .where('creatorPhone', isEqualTo: normalized)
         .where('archived', isEqualTo: false)
@@ -63,7 +97,7 @@ class DebtService {
   }
 
   Stream<List<Debt>> getParticipantDebts(String userPhone) {
-    final normalized = normalizePhone(userPhone);
+    final normalized = _digitsOnly(userPhone);
     return _debtsRef
         .where('participantPhone', isEqualTo: normalized)
         .where('archived', isEqualTo: false)
@@ -78,7 +112,7 @@ class DebtService {
   }
 
   Stream<List<Debt>> getArchivedDebts(String userPhone) {
-    final normalized = normalizePhone(userPhone);
+    final normalized = _digitsOnly(userPhone);
     return _debtsRef
         .where('archived', isEqualTo: true)
         .snapshots()
@@ -151,19 +185,6 @@ class DebtService {
         return Debt.fromMap(doc.data() as Map<String, dynamic>);
       }
       return null;
-    });
-  }
-
-  // Get all registered users (for contacts list)
-  Stream<List<Map<String, dynamic>>> getRegisteredUsers() {
-    return _usersRef.snapshots().map((snapshot) {
-      return snapshot.docs
-          .map((doc) => {
-                'uid': doc.id,
-                'name': doc['displayName'] ?? doc['name'] ?? 'Без имени',
-                'phone': doc['phone'] ?? '',
-              })
-          .toList();
     });
   }
 }
