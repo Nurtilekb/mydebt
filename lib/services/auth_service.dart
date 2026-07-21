@@ -2,46 +2,30 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+  );
 
   User? get currentUser => _auth.currentUser;
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  Future<void> sendOtp(
-    String phoneNumber,
-    Function(String verificationId, int? resendToken) onCodeSent,
-    Function(String error) onError,
-  ) async {
+  Future<bool> signInWithGoogle() async {
     try {
-      await _auth.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        timeout: const Duration(seconds: 60),
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await _auth.signInWithCredential(credential);
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          onError(e.message ?? 'Ошибка верификации');
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          onCodeSent(verificationId, resendToken);
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {},
-      );
-    } catch (e) {
-      onError(e.toString());
-    }
-  }
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return false;
 
-  Future<bool> verifyOtp(String verificationId, String smsCode) async {
-    try {
-      final credential = PhoneAuthProvider.credential(
-        verificationId: verificationId,
-        smsCode: smsCode,
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
       );
+
       final userCredential = await _auth.signInWithCredential(credential);
       if (userCredential.user != null) {
         await _saveUserToFirestore(userCredential.user!);
@@ -62,10 +46,15 @@ class AuthService {
       await doc.set(UserModel(
         uid: user.uid,
         phone: user.phoneNumber ?? '',
-        displayName: user.displayName,
+        displayName: user.displayName ?? '',
+        email: user.email,
       ).toMap());
     } else {
-      await doc.update({'phone': user.phoneNumber});
+      await doc.update({
+        'phone': user.phoneNumber,
+        'displayName': user.displayName,
+        'email': user.email,
+      });
     }
   }
 
@@ -89,6 +78,7 @@ class AuthService {
   }
 
   Future<void> signOut() async {
+    await _googleSignIn.signOut();
     await _auth.signOut();
   }
 }
