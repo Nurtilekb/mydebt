@@ -1,50 +1,32 @@
 ```
-# Compiled and build artifacts
-*.pyc
-__pycache__/
-*.o
-*.obj
-*.class
-*.exe
-*.dll
-*.so
-*.a
-*.out
-
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
-*.swp
-*.swo
-*~
+# Flutter/Dart specific
+.dart_tool/
+.packages
+.pub-cache/
+pubspec.lock
 
 # Build outputs
-dist/
 build/
-target/
-.coverage
-coverage/
-htmlcov/
+*.apk
+*.aab
+*.ipa
+*.app
 
-# Logs and temp files
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
 *.log
 *.tmp
-*.swp
-*.swo
 
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
+# Environment
+.env
+.env.local
+*.env.*
 
-# System
-.DS_Store
-Thumbs.db
-
-# Testing
-.mypy_cache/
-.pytest_cache/
+# Dependencies
+node_modules/
 ```

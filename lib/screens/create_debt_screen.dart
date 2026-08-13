@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/debt_service.dart';
 import '../services/auth_service.dart';
+import '../models/debt_model.dart';
 
 class CreateDebtScreen extends StatefulWidget {
-  const CreateDebtScreen({super.key});
+  final DebtType debtType;
+  
+  const CreateDebtScreen({super.key, this.debtType = DebtType.owedToMe});
 
   @override
   State<CreateDebtScreen> createState() => _CreateDebtScreenState();
@@ -130,18 +133,34 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Determine button text and colors based on debt type
+    final buttonText = widget.debtType == DebtType.owedToMe 
+        ? 'Мне должны' 
+        : 'Я должен';
+    final buttonColor = widget.debtType == DebtType.owedToMe
+        ? const Color(0xFF007AFF)
+        : const Color(0xFFFF3B30);
+    final titleText = widget.debtType == DebtType.owedToMe
+        ? 'Новый долг (мне должны)'
+        : 'Новый долг (я должен)';
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F7),
+      backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFF2F2F7),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(CupertinoIcons.back, color: Colors.blue),
+          icon: Icon(CupertinoIcons.back, color: isDark ? Colors.white : Colors.blue),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Новый долг',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+        title: Text(
+          titleText,
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black, 
+            fontWeight: FontWeight.w600,
+          ),
         ),
         centerTitle: true,
       ),
@@ -156,12 +175,12 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: _selectedFriendName != null
-                        ? Colors.blue
-                        : Colors.grey[300]!,
+                        ? buttonColor
+                        : isDark ? const Color(0xFF3A3A3C) : Colors.grey[300]!,
                     width: _selectedFriendName != null ? 2 : 1,
                   ),
                 ),
@@ -175,32 +194,33 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
                               children: [
                                 Text(
                                   _selectedFriendName!,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w600,
+                                    color: isDark ? Colors.white : Colors.black,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   _selectedFriendPhone ?? '',
                                   style: TextStyle(
-                                    color: Colors.grey[500],
+                                    color: isDark ? const Color(0xFF8E8E93) : Colors.grey[500],
                                     fontSize: 14,
                                   ),
                                 ),
                               ],
                             )
-                          : const Text(
+                          : Text(
                               'Выбрать контакт',
                               style: TextStyle(
-                                color: Colors.grey,
+                                color: isDark ? const Color(0xFF8E8E93) : Colors.grey,
                                 fontSize: 17,
                               ),
                             ),
                     ),
-                    const Icon(
+                    Icon(
                       CupertinoIcons.chevron_right,
-                      color: Colors.grey,
+                      color: isDark ? const Color(0xFF8E8E93) : Colors.grey,
                     ),
                   ],
                 ),
@@ -212,19 +232,20 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[300]!),
+                border: Border.all(color: isDark ? const Color(0xFF3A3A3C) : Colors.grey[300]!),
               ),
               child: TextField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  fillColor: Colors.white,
+                style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                decoration: InputDecoration(
+                  fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
                   filled: true,
                   border: InputBorder.none,
                   hintText: 'Сумма',
-                  hintStyle: TextStyle(color: Colors.grey),
+                  hintStyle: TextStyle(color: isDark ? const Color(0xFF8E8E93) : Colors.grey),
                 ),
               ),
             ),
@@ -234,18 +255,19 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[300]!),
+                border: Border.all(color: isDark ? const Color(0xFF3A3A3C) : Colors.grey[300]!),
               ),
               child: TextField(
                 controller: _descController,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  fillColor: Colors.white,
+                style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                decoration: InputDecoration(
+                  fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
                   border: InputBorder.none,
                   hintText: 'Комментарий (необязательно)',
-                  hintStyle: TextStyle(color: Colors.grey),
+                  hintStyle: TextStyle(color: isDark ? const Color(0xFF8E8E93) : Colors.grey),
                 ),
               ),
             ),
@@ -255,7 +277,7 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
             ElevatedButton(
               onPressed: _createDebt,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: buttonColor,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -263,9 +285,9 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
                 ),
                 elevation: 0,
               ),
-              child: const Text(
-                'Мне должны',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              child: Text(
+                buttonText,
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -275,6 +297,7 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
   }
 
   void _showContactPicker() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     _phoneController.clear();
     _searchController.clear();
     setState(() {
@@ -284,14 +307,15 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
 
     showModalBottomSheet(
       context: context,
-
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) {
           return Container(
             height: MediaQuery.of(context).size.height * 0.75,
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Column(
               children: [
@@ -301,17 +325,21 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: isDark ? const Color(0xFF3A3A3C) : Colors.grey[300],
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
 
                 // Title
-                const Padding(
-                  padding: EdgeInsets.all(16),
+                Padding(
+                  padding: const EdgeInsets.all(16),
                   child: Text(
                     'Выберите контакт',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 18, 
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
                   ),
                 ),
 
