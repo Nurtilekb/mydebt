@@ -53,14 +53,15 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
   Future<void> _loadRegisteredContacts() async {
     setState(() => _isLoadingContacts = true);
     try {
-      final usersSnap =
-          await context.read<DebtService>().getRegisteredUsers().first;
+      final usersSnap = await context
+          .read<DebtService>()
+          .getRegisteredUsers()
+          .first;
       final currentUser = context.read<AuthService>().currentUser;
       final currentUid = currentUser?.uid ?? '';
 
       setState(() {
-        _allContacts =
-            usersSnap.where((u) => u['uid'] != currentUid).toList();
+        _allContacts = usersSnap.where((u) => u['uid'] != currentUid).toList();
         _isLoadingContacts = false;
       });
     } catch (e) {
@@ -280,251 +281,172 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+
       isScrollControlled: true,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.75,
-        minChildSize: 0.5,
-        maxChildSize: 0.9,
-        builder: (ctx, scrollController) => StatefulBuilder(
-          builder: (ctx, setSheetState) {
-            return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: Column(
-                children: [
-                  // Drag handle
-                  Container(
-                    margin: const EdgeInsets.only(top: 12),
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.75,
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
+              children: [
+                // Drag handle
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
                   ),
+                ),
 
-                  // Title
-                  const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text(
-                      'Выберите контакт',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
+                // Title
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'Выберите контакт',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
+                ),
 
-                  // ========== SECTION 1: Search contacts by name ==========
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: 'Поиск по имени...',
-                        prefixIcon: const Icon(Icons.search),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  setSheetState(() {});
-                                },
-                              )
-                            : null,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                      ),
-                      onChanged: (_) => setSheetState(() {}),
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // Registered contacts list
-                  if (_isLoadingContacts)
-                    const Expanded(
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  else if (_allContacts.isEmpty)
-                    Expanded(
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Text(
-                            'Нет зарегистрированных контактов.\nДобавьте по номеру телефона ниже.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: Colors.grey[500], fontSize: 15),
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    Expanded(
-                      child: _filteredContacts.isEmpty
-                          ? Center(
-                              child: Text(
-                                'Контакты не найдены',
-                                style: TextStyle(
-                                    color: Colors.grey[400], fontSize: 16),
-                              ),
-                            )
-                          : ListView.builder(
-                              controller: scrollController,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              itemCount: _filteredContacts.length,
-                              itemBuilder: (ctx, i) {
-                                final contact = _filteredContacts[i];
-                                final isSelected =
-                                    _selectedFriendUid == contact['uid'];
-                                return Container(
-                                  margin: const EdgeInsets.only(bottom: 6),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? Colors.blue[50]
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? Colors.blue
-                                          : Colors.grey.shade200,
-                                    ),
-                                  ),
-                                  child: ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundColor: isSelected
-                                          ? Colors.blue[200]
-                                          : Colors.blue[100],
-                                      child: Text(
-                                        (contact['name'] as String).isNotEmpty
-                                            ? (contact['name'] as String)[0]
-                                                .toUpperCase()
-                                            : '?',
-                                        style: TextStyle(
-                                          color: isSelected
-                                              ? Colors.white
-                                              : Colors.blue[700],
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    title: Text(
-                                      contact['name'],
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      contact['phone'],
-                                      style: TextStyle(
-                                        color: Colors.grey[500],
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                    trailing: isSelected
-                                        ? const Icon(Icons.check_circle,
-                                            color: Colors.blue)
-                                        : null,
-                                    onTap: () {
-                                      setSheetState(() {});
-                                      _selectContact(contact);
-                                    },
-                                  ),
-                                );
+                // ========== SECTION 1: Search contacts by name ==========
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Поиск по имени...',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                setSheetState(() {});
                               },
-                            ),
-                    ),
-
-                  // ========== SECTION 2: Add by phone number ==========
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      border: Border(
-                        top: BorderSide(color: Colors.grey.shade200),
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          'Или добавьте по номеру телефона',
+                    onChanged: (_) => setSheetState(() {}),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // Registered contacts list
+                if (_isLoadingContacts)
+                  const Expanded(
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (_allContacts.isEmpty)
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Text(
+                          'Нет зарегистрированных контактов.\nДобавьте по номеру телефона ниже.',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey[600],
+                            color: Colors.grey[500],
+                            fontSize: 15,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _phoneController,
-                                keyboardType: TextInputType.phone,
-                                decoration: InputDecoration(
-                                  hintText: '+7 (999) 123-45-67',
-                                  prefixIcon: const Icon(Icons.phone,
-                                      size: 20),
-                                  errorText: _phoneSearchError,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 12,
-                                  ),
-                                  isDense: true,
-                                ),
-                                onSubmitted: (_) => _searchByPhone(),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            SizedBox(
-                              height: 46,
-                              child: ElevatedButton(
-                                onPressed:
-                                    _isSearchingPhone ? null : _searchByPhone,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: _isSearchingPhone
-                                    ? const SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : const Text('Добавить'),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
+                  )
+                else
+                  Expanded(
+                    child: _filteredContacts.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Контакты не найдены',
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 16,
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: _filteredContacts.length,
+                            itemBuilder: (ctx, i) {
+                              final contact = _filteredContacts[i];
+                              final isSelected =
+                                  _selectedFriendUid == contact['uid'];
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 6),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? Colors.blue[50]
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? Colors.blue
+                                        : Colors.grey.shade200,
+                                  ),
+                                ),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: isSelected
+                                        ? Colors.blue[200]
+                                        : Colors.blue[100],
+                                    child: Text(
+                                      (contact['name'] as String).isNotEmpty
+                                          ? (contact['name'] as String)[0]
+                                                .toUpperCase()
+                                          : '?',
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? Colors.white
+                                            : Colors.blue[700],
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    contact['name'],
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    contact['phone'],
+                                    style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  trailing: isSelected
+                                      ? const Icon(
+                                          Icons.check_circle,
+                                          color: Colors.blue,
+                                        )
+                                      : null,
+                                  onTap: () {
+                                    setSheetState(() {});
+                                    _selectContact(contact);
+                                  },
+                                ),
+                              );
+                            },
+                          ),
                   ),
-                ],
-              ),
-            );
-          },
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -532,23 +454,23 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
   Future<void> _createDebt() async {
     final amountText = _amountController.text.trim();
     if (amountText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Введите сумму')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Введите сумму')));
       return;
     }
     if (_selectedFriendPhone == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Выберите контакт')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Выберите контакт')));
       return;
     }
 
     final amount = double.tryParse(amountText);
     if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Введите корректную сумму')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Введите корректную сумму')));
       return;
     }
 
@@ -572,9 +494,9 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
       }
     }
   }
