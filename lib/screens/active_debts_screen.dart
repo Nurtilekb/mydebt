@@ -156,15 +156,16 @@ class _DebtCard extends StatelessWidget {
   });
 
   Color _getStatusColor() {
-    if (debt.status == DebtStatus.pending) return Colors.orange;
+    if (debt.status == DebtStatus.pending) return const Color(0xFFFF9500); // iOS Orange
     if (debt.status == DebtStatus.confirmedByCreator ||
         debt.status == DebtStatus.confirmedByParticipant)
-      return Colors.blue;
-    return Colors.grey;
+      return const Color(0xFF007AFF); // iOS Blue
+    return const Color(0xFF8E8E93); // iOS Gray
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final myConfirmed = debt.confirmations[myRole] == true;
 
     // Determine the other person's name based on my role
@@ -174,23 +175,31 @@ class _DebtCard extends StatelessWidget {
 
     // Color coding: green for money I'll get, red for money I owe
     final isCreditor = myRole == 'creator';
+    final amountColor = isCreditor 
+        ? const Color(0xFF34C759) // iOS Green
+        : const Color(0xFFFF3B30); // iOS Red
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark 
+              ? const Color(0xFF3A3A3C) 
+              : const Color(0xFFE5E5EA),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         onTap: () {
           Navigator.push(
             context,
@@ -200,119 +209,143 @@ class _DebtCard extends StatelessWidget {
           );
         },
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 56,
+                    height: 56,
                     decoration: BoxDecoration(
-                      color: _getStatusColor().withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(14),
+                      color: _getStatusColor().withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                     child: Icon(
                       isCreditor
                           ? CupertinoIcons.arrow_down_left
                           : CupertinoIcons.arrow_up_right,
                       color: _getStatusColor(),
-                      size: 24,
+                      size: 28,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          otherName,
+                          otherName ?? 'Неизвестно',
                           style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 17,
+                            fontWeight: FontWeight.semibold,
+                            fontSize: 18,
+                            letterSpacing: -0.3,
                           ),
                         ),
+                        const SizedBox(height: 4),
                         Text(
                           isCreditor ? 'Должен вам' : 'Вы должны',
                           style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 14,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                            fontSize: 15,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Text(
-                    '${debt.amount.toStringAsFixed(0)} ₽',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: isCreditor ? Colors.green[600] : Colors.red[600],
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: amountColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${debt.amount.toStringAsFixed(0)} ₽',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        letterSpacing: -0.5,
+                        color: amountColor,
+                      ),
                     ),
                   ),
                 ],
               ),
               if (debt.description != null &&
                   debt.description!.isNotEmpty) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
+                    color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
                     debt.description!,
-                    style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                      fontSize: 15,
+                      height: 1.4,
+                    ),
                   ),
                 ),
               ],
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Row(
                 children: [
-                  Icon(CupertinoIcons.clock,
-                      size: 14, color: Colors.grey[500]),
-                  const SizedBox(width: 4),
+                  Icon(
+                    CupertinoIcons.clock,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                  ),
+                  const SizedBox(width: 6),
                   Text(
                     _formatDate(debt.createdAt),
-                    style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                    ),
                   ),
                   const Spacer(),
                   if (myConfirmed)
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
+                        color: const Color(0xFF34C759).withOpacity(0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Text(
-                        'Вы подтвердили',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.green,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            CupertinoIcons.check_mark_circled,
+                            size: 14,
+                            color: Color(0xFF34C759),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Подтверждено',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF34C759),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   else
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: _getStatusColor().withOpacity(0.1),
+                        color: _getStatusColor().withOpacity(0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         debt.statusLabel,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 13,
                           color: _getStatusColor(),
                           fontWeight: FontWeight.w600,
                         ),
@@ -323,27 +356,55 @@ class _DebtCard extends StatelessWidget {
 
               // Confirm button for this debt
               if (!debt.isClosed && !myConfirmed) ...[
-                const SizedBox(height: 12),
-                SizedBox(
+                const SizedBox(height: 16),
+                Container(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _confirmDebt(context),
-                    icon: const Icon(Icons.check_circle_outline, size: 20),
-                    label: Text(
-                      confirmLabel,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  height: 52,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF34C759),
+                        const Color(0xFF30B753),
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF34C759).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
-                      elevation: 0,
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () => _confirmDebt(context),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              CupertinoIcons.check_mark,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              confirmLabel,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.semibold,
+                                color: Colors.white,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -356,6 +417,16 @@ class _DebtCard extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+    
+    if (difference.inDays == 0) {
+      return 'Сегодня';
+    } else if (difference.inDays == 1) {
+      return 'Вчера';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} дн. назад';
+    }
     return '${date.day}.${date.month.toString().padLeft(2, '0')}.${date.year}';
   }
 
@@ -367,7 +438,19 @@ class _DebtCard extends StatelessWidget {
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Подтверждено')),
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(CupertinoIcons.check_mark_circled, color: Colors.white),
+              SizedBox(width: 12),
+              Text('Подтверждено'),
+            ],
+          ),
+          backgroundColor: const Color(0xFF34C759),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(16),
+        ),
       );
     }
   }
