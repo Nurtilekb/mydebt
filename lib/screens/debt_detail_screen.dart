@@ -104,7 +104,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                               horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: _getStatusColor(debt.status)
-                                .withValues(alpha: 0.1),
+                                .withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
