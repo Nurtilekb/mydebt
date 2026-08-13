@@ -14,19 +14,31 @@ class DebtService {
   // ── Users ──
 
   Stream<List<Map<String, dynamic>>> getRegisteredUsers() {
+    print('DebtService: getRegisteredUsers called');
     return _usersRef.snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        final phone = (data['phone'] ?? '').toString();
-        String name = (data['displayName'] ?? '').toString();
-        if (name.isEmpty) {
-          name = (data['email'] ?? '').toString();
+      final users = <Map<String, dynamic>>[];
+      print('DebtService: Found ${snapshot.docs.length} user documents');
+      for (final doc in snapshot.docs) {
+        try {
+          final data = doc.data() as Map<String, dynamic>;
+          print('DebtService: Processing user ${doc.id}, data keys: ${data.keys.toList()}');
+          final phone = (data['phone'] ?? '').toString();
+          String name = (data['displayName'] ?? '').toString();
+          if (name.isEmpty) {
+            name = (data['email'] ?? '').toString();
+          }
+          if (name.isEmpty) {
+            name = phone.isNotEmpty ? phone : 'Пользователь';
+          }
+          final userData = {'uid': doc.id, 'name': name, 'phone': phone};
+          print('DebtService: User data: $userData');
+          users.add(userData);
+        } catch (e) {
+          print('Error processing user doc ${doc.id}: $e');
         }
-        if (name.isEmpty) {
-          name = phone.isNotEmpty ? phone : 'Пользователь';
-        }
-        return {'uid': doc.id, 'name': name, 'phone': phone};
-      }).toList();
+      }
+      print('DebtService: Returning ${users.length} users');
+      return users;
     });
   }
 
