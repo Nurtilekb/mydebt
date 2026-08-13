@@ -16,7 +16,7 @@ class AuthScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Spacer(),
+              const Spacer(), 
               Container(
                 width: 80,
                 height: 80,
@@ -54,11 +54,7 @@ class AuthScreen extends StatelessWidget {
                   final authService = context.read<AuthService>();
                   await authService.signInWithGoogle();
                 },
-                icon: Image.network(
-                  'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                  height: 24,
-                  width: 24,
-                ),
+                icon: Icon(Icons.email),
                 label: const Text('Войти через Google'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,

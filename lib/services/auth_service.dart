@@ -8,9 +8,7 @@ import '../models/user_model.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile'],
-  );
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
 
   User? get currentUser => _auth.currentUser;
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -20,7 +18,8 @@ class AuthService {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return false;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -43,12 +42,14 @@ class AuthService {
     final snapshot = await doc.get();
 
     if (!snapshot.exists) {
-      await doc.set(UserModel(
-        uid: user.uid,
-        phone: user.phoneNumber ?? '',
-        displayName: user.displayName ?? '',
-        email: user.email,
-      ).toMap());
+      await doc.set(
+        UserModel(
+          uid: user.uid,
+          phone: user.phoneNumber ?? '',
+          displayName: user.displayName ?? '',
+          email: user.email,
+        ).toMap(),
+      );
     } else {
       await doc.update({
         'phone': user.phoneNumber,
