@@ -20,7 +20,7 @@ class DebtService {
         final phone = (data['phone'] ?? '').toString();
         String name = (data['displayName'] ?? '').toString();
         if (name.isEmpty) {
-          name = (data['name'] ?? '').toString();
+          name = (data['email'] ?? '').toString();
         }
         if (name.isEmpty) {
           name = phone.isNotEmpty ? phone : 'Пользователь';
