@@ -515,6 +515,7 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
         description: _descController.text.trim().isEmpty
             ? null
             : _descController.text.trim(),
+        debtType: widget.debtType,
       );
       if (mounted) Navigator.pop(context);
     } catch (e) {
