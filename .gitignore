@@ -1,28 +1,56 @@
 ```
-# Dependencies
+# Flutter/Dart specific
 .dart_tool/
+.build/
 .packages
-.pub/
 pubspec.lock
 
-# Build
-build/
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
 
 # Logs
 *.log
+*.tmp
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
+# Dependencies
+node_modules/
+vendor/
 
-# OS
+# Build artifacts
+build/
+dist/
+target/
+
+# Python related (if any Python components)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Compiled Binary files
+*.class
+*.o
+*.so
+*.a
+*.dll
+*.exe
+*.out
+
+# OS generated files
 .DS_Store
 Thumbs.db
 ```
