@@ -8,13 +8,20 @@ import '../models/user_model.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+    // Add your web client ID from Firebase Console here if needed
+    // serverClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+  );
 
   User? get currentUser => _auth.currentUser;
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   Future<bool> signInWithGoogle() async {
     try {
+      // Ensure any open keyboard is dismissed before sign-in
+      await Future.delayed(const Duration(milliseconds: 100));
+      
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return false;
 
@@ -33,6 +40,7 @@ class AuthService {
       }
       return false;
     } catch (e) {
+      print('Google Sign-In Error: $e');
       return false;
     }
   }
