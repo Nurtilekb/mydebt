@@ -31,8 +31,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           padding: const EdgeInsets.all(16),
           child: Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark 
-                  ? const Color(0xFF2C2C2E) 
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF2C2C2E)
                   : const Color(0xFFE5E5EA),
               borderRadius: BorderRadius.circular(14),
             ),
@@ -47,11 +47,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   },
                   itemBuilder: (context) => [
                     const PopupMenuItem(value: 'date', child: Text('По дате')),
-                    const PopupMenuItem(value: 'amount', child: Text('По сумме')),
+                    const PopupMenuItem(
+                      value: 'amount',
+                      child: Text('По сумме'),
+                    ),
                   ],
                 ),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
               ),
               onChanged: (value) {
                 setState(() => _filterQuery = value);
@@ -73,10 +79,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
               // Apply filter
               if (_filterQuery.isNotEmpty) {
-                debts = debts.where((d) =>
-                    (d.description ?? '').toLowerCase().contains(_filterQuery.toLowerCase()) ||
-                    d.creatorName.toLowerCase().contains(_filterQuery.toLowerCase()) ||
-                    (d.participantName ?? '').toLowerCase().contains(_filterQuery.toLowerCase()))
+                debts = debts
+                    .where(
+                      (d) =>
+                          (d.description ?? '').toLowerCase().contains(
+                            _filterQuery.toLowerCase(),
+                          ) ||
+                          d.creatorName.toLowerCase().contains(
+                            _filterQuery.toLowerCase(),
+                          ) ||
+                          (d.participantName ?? '').toLowerCase().contains(
+                            _filterQuery.toLowerCase(),
+                          ),
+                    )
                     .toList();
               }
 
@@ -144,7 +159,7 @@ class _HistoryCard extends StatelessWidget {
         : debt.creatorName;
 
     final isClosed = debt.status == DebtStatus.closed;
-    final statusColor = isClosed 
+    final statusColor = isClosed
         ? const Color(0xFF34C759) // iOS Green
         : const Color(0xFFFF3B30); // iOS Red
 
@@ -154,9 +169,7 @@ class _HistoryCard extends StatelessWidget {
         color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark 
-              ? const Color(0xFF3A3A3C) 
-              : const Color(0xFFE5E5EA),
+          color: isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA),
           width: 1,
         ),
         boxShadow: [
@@ -185,8 +198,8 @@ class _HistoryCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Icon(
-                    isClosed 
-                        ? CupertinoIcons.checkmark_circle_fill 
+                    isClosed
+                        ? CupertinoIcons.checkmark_circle_fill
                         : CupertinoIcons.xmark_circle_fill,
                     color: statusColor,
                     size: 28,
@@ -200,7 +213,7 @@ class _HistoryCard extends StatelessWidget {
                       Text(
                         otherName ?? 'Неизвестно',
                         style: const TextStyle(
-                          fontWeight: FontWeight.semibold,
+                          fontWeight: FontWeight.w600,
                           fontSize: 17,
                           letterSpacing: -0.3,
                         ),
@@ -209,7 +222,9 @@ class _HistoryCard extends StatelessWidget {
                       Text(
                         isClosed ? 'Закрыт' : 'Отклонён',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.5),
                           fontSize: 14,
                         ),
                       ),
@@ -233,7 +248,9 @@ class _HistoryCard extends StatelessWidget {
                       _formatDate(debt.closedAt ?? debt.createdAt),
                       style: TextStyle(
                         fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.4),
                       ),
                     ),
                   ],
@@ -249,7 +266,7 @@ class _HistoryCard extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays == 0) {
       return 'Сегодня';
     } else if (difference.inDays == 1) {
@@ -272,40 +289,58 @@ class _HistoryCard extends StatelessWidget {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: ListView(
               children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(2),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Детали долга',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _DetailRow(
+                      label: 'Сумма',
+                      value: '${debt.amount.toStringAsFixed(0)} ₽',
+                    ),
+                    _DetailRow(label: 'Создатель', value: debt.creatorName),
+                    _DetailRow(
+                      label: 'Участник',
+                      value: debt.participantName ?? debt.participantPhone,
+                    ),
+                    if (debt.description != null &&
+                        debt.description!.isNotEmpty)
+                      _DetailRow(label: 'Описание', value: debt.description!),
+                    _DetailRow(
+                      label: 'Создан',
+                      value: _formatDate(debt.createdAt),
+                    ),
+                    _DetailRow(
+                      label: 'Закрыт',
+                      value: debt.closedAt != null
+                          ? _formatDate(debt.closedAt!)
+                          : '-',
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                Text(
-                  'Детали долга',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _DetailRow(label: 'Сумма', value: '${debt.amount.toStringAsFixed(0)} ₽'),
-                _DetailRow(label: 'Создатель', value: debt.creatorName),
-                _DetailRow(label: 'Участник', value: debt.participantName ?? debt.participantPhone),
-                if (debt.description != null && debt.description!.isNotEmpty)
-                  _DetailRow(label: 'Описание', value: debt.description!),
-                _DetailRow(label: 'Создан', value: _formatDate(debt.createdAt)),
-                _DetailRow(
-                  label: 'Закрыт',
-                  value: debt.closedAt != null ? _formatDate(debt.closedAt!) : '-',
-                ),
-                const SizedBox(height: 24),
               ],
             ),
           ),
@@ -367,9 +402,9 @@ class _DetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
@@ -388,7 +423,7 @@ class _DetailRow extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(
-              fontWeight: FontWeight.semibold,
+              fontWeight: FontWeight.w600,
               fontSize: 15,
               letterSpacing: -0.3,
             ),

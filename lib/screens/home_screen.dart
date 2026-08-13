@@ -16,7 +16,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late AnimationController _fabAnimationController;
   late Animation<double> _fabAnimation;
@@ -29,7 +30,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       vsync: this,
     );
     _fabAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fabAnimationController, curve: Curves.easeOutCubic),
+      CurvedAnimation(
+        parent: _fabAnimationController,
+        curve: Curves.easeOutCubic,
+      ),
     );
     _fabAnimationController.forward();
   }
@@ -54,7 +58,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
         systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarIconBrightness: isDark
+            ? Brightness.light
+            : Brightness.dark,
       ),
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -62,7 +68,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: const Text('Должок', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: -0.5)),
+          title: const Text(
+            'Должок',
+            style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: -0.5),
+          ),
           actions: [
             if (_currentIndex == 0 || _currentIndex == 1)
               Padding(
@@ -108,23 +117,44 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
               child: Container(
                 decoration: BoxDecoration(
-                  color: (isDark ? const Color(0xFF1C1C1E) : Colors.white).withOpacity(0.85),
+                  color: (isDark ? const Color(0xFF1C1C1E) : Colors.white)
+                      .withOpacity(0.85),
                   border: Border(
                     top: BorderSide(
-                      color: (isDark ? Colors.white : Colors.black).withOpacity(0.1),
+                      color: (isDark ? Colors.white : Colors.black).withOpacity(
+                        0.1,
+                      ),
                       width: 0.5,
                     ),
                   ),
                 ),
                 child: SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildNavItem(0, CupertinoIcons.doc_text, CupertinoIcons.doc_text_fill, 'Активные'),
-                        _buildNavItem(1, CupertinoIcons.clock, CupertinoIcons.clock_fill, 'История'),
-                        _buildNavItem(2, CupertinoIcons.person_2, CupertinoIcons.person_2_fill, 'Контакты'),
+                        _buildNavItem(
+                          0,
+                          CupertinoIcons.doc_text,
+                          CupertinoIcons.doc_text_fill,
+                          'Активные',
+                        ),
+                        _buildNavItem(
+                          1,
+                          CupertinoIcons.clock,
+                          CupertinoIcons.clock_fill,
+                          'История',
+                        ),
+                        _buildNavItem(
+                          2,
+                          CupertinoIcons.person_2,
+                          CupertinoIcons.person_2_fill,
+                          'Контакты',
+                        ),
                       ],
                     ),
                   ),
@@ -147,7 +177,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.4),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.4),
                         blurRadius: 12,
                         offset: const Offset(0, 6),
                       ),
@@ -160,21 +192,30 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const CreateDebtScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const CreateDebtScreen(),
+                          ),
                         );
                       },
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(CupertinoIcons.plus, color: Colors.white, size: 22),
-                            SizedBox(width: 8),
+                            const Icon(
+                              CupertinoIcons.plus,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 8),
                             Text(
                               'Новый долг',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.semibold,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 16,
                                 letterSpacing: -0.3,
                               ),
@@ -191,18 +232,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, IconData activeIcon, String label) {
+  Widget _buildNavItem(
+    int index,
+    IconData icon,
+    IconData activeIcon,
+    String label,
+  ) {
     final isSelected = _currentIndex == index;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.12) 
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary.withOpacity(0.12)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
         ),
@@ -212,9 +258,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             Icon(
               isSelected ? activeIcon : icon,
               size: 26,
-              color: isSelected 
-                  ? Theme.of(context).colorScheme.primary 
-                  : (isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93)),
+              color: isSelected
+                  ? Theme.of(context).colorScheme.primary
+                  : (isDark
+                        ? const Color(0xFF8E8E93)
+                        : const Color(0xFF8E8E93)),
             ),
             const SizedBox(height: 4),
             Text(
@@ -222,9 +270,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected 
-                    ? Theme.of(context).colorScheme.primary 
-                    : (isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93)),
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : (isDark
+                          ? const Color(0xFF8E8E93)
+                          : const Color(0xFF8E8E93)),
               ),
             ),
           ],
@@ -254,237 +304,261 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ],
         ),
         child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: ListView(
             children: [
-              Container(
-                margin: const EdgeInsets.only(top: 16),
-                width: 48,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF3A3A3C) : const Color(0xFFD1D1D6),
-                  borderRadius: BorderRadius.circular(2.5),
-                ),
-              ),
-              const SizedBox(height: 28),
-              Stack(
+              Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 90,
-                    height: 90,
+                    margin: const EdgeInsets.only(top: 16),
+                    width: 48,
+                    height: 5,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.primary,
-                          Theme.of(context).colorScheme.secondary,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                      color: isDark
+                          ? const Color(0xFF3A3A3C)
+                          : const Color(0xFFD1D1D6),
+                      borderRadius: BorderRadius.circular(2.5),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Stack(
+                    children: [
+                      Container(
+                        width: 90,
+                        height: 90,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Theme.of(context).colorScheme.primary,
+                              Theme.of(context).colorScheme.secondary,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.3),
+                              blurRadius: 15,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          (user?.displayName ?? 'U').isNotEmpty
+                              ? (user?.displayName ?? 'U')[0].toUpperCase()
+                              : 'U',
+                          style: const TextStyle(
+                            fontSize: 42,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.tertiary,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF1C1C1E)
+                                  : Colors.white,
+                              width: 3,
+                            ),
+                          ),
+                          child: const Icon(
+                            CupertinoIcons.check_mark,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    user?.displayName ?? 'Пользователь',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+
+                  const SizedBox(height: 2),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF2C2C2E)
+                          : const Color(0xFFF2F2F7),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        Column(
+                          children: [
+                            ListTile(
+                              leading: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  CupertinoIcons.person_fill,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  size: 20,
+                                ),
+                              ),
+                              title: const Text(
+                                'Профиль',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              subtitle: Text(
+                                'Настройки аккаунта',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withOpacity(0.5),
+                                ),
+                              ),
+                              trailing: Icon(
+                                CupertinoIcons.chevron_right,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.3),
+                              ),
+                              onTap: () {},
+                            ),
+                            Divider(
+                              height: 1,
+                              color: (isDark ? Colors.white : Colors.black)
+                                  .withOpacity(0.1),
+                            ),
+                            ListTile(
+                              leading: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.secondary.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  CupertinoIcons.bell_fill,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.secondary,
+                                  size: 20,
+                                ),
+                              ),
+                              title: const Text(
+                                'Уведомления',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              subtitle: Text(
+                                'Оповещения о долгах',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withOpacity(0.5),
+                                ),
+                              ),
+                              trailing: Icon(
+                                CupertinoIcons.chevron_right,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.3),
+                              ),
+                              onTap: () {},
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      (user?.displayName ?? 'U').isNotEmpty
-                          ? (user?.displayName ?? 'U')[0].toUpperCase()
-                          : 'U',
-                      style: const TextStyle(
-                        fontSize: 42,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.error.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.error.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          CupertinoIcons.square_arrow_left,
+                          color: Theme.of(context).colorScheme.error,
+                          size: 20,
+                        ),
                       ),
+                      title: Text(
+                        'Выйти из аккаунта',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                      onTap: () async {
+                        Navigator.pop(ctx);
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => CupertinoAlertDialog(
+                            title: const Text('Выход'),
+                            content: const Text('Выйти из аккаунта?'),
+                            actions: [
+                              CupertinoDialogAction(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Отмена'),
+                              ),
+                              CupertinoDialogAction(
+                                onPressed: () => Navigator.pop(context, true),
+                                isDestructiveAction: true,
+                                child: const Text('Выйти'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed == true && mounted) {
+                          await authService.signOut();
+                        }
+                      },
                     ),
                   ),
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.tertiary,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: isDark ? const Color(0xFF1C1C1E) : Colors.white, width: 3),
-                      ),
-                      child: const Icon(CupertinoIcons.check_mark, color: Colors.white, size: 18),
-                    ),
-                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
-              const SizedBox(height: 20),
-              Text(
-                user?.displayName ?? 'Пользователь',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      CupertinoIcons.phone_fill,
-                      size: 14,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      user?.phoneNumber ?? '',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          CupertinoIcons.person_fill,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 20,
-                        ),
-                      ),
-                      title: const Text(
-                        'Профиль',
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                      ),
-                      subtitle: Text(
-                        'Настройки аккаунта',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                        ),
-                      ),
-                      trailing: Icon(
-                        CupertinoIcons.chevron_right,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                      ),
-                      onTap: () {},
-                    ),
-                    Divider(
-                      height: 1,
-                      color: (isDark ? Colors.white : Colors.black).withOpacity(0.1),
-                    ),
-                    ListTile(
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.secondary.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          CupertinoIcons.bell_fill,
-                          color: Theme.of(context).colorScheme.secondary,
-                          size: 20,
-                        ),
-                      ),
-                      title: const Text(
-                        'Уведомления',
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                      ),
-                      subtitle: Text(
-                        'Оповещения о долгах',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                        ),
-                      ),
-                      trailing: Icon(
-                        CupertinoIcons.chevron_right,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                      ),
-                      onTap: () {},
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.error.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.error.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      CupertinoIcons.square_arrow_left,
-                      color: Theme.of(context).colorScheme.error,
-                      size: 20,
-                    ),
-                  ),
-                  title: Text(
-                    'Выйти из аккаунта',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => CupertinoAlertDialog(
-                        title: const Text('Выход'),
-                        content: const Text('Выйти из аккаунта?'),
-                        actions: [
-                          CupertinoDialogAction(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Отмена'),
-                          ),
-                          CupertinoDialogAction(
-                            onPressed: () => Navigator.pop(context, true),
-                            isDestructiveAction: true,
-                            child: const Text('Выйти'),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirmed == true && mounted) {
-                      await authService.signOut();
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(height: 40),
             ],
           ),
         ),

@@ -42,16 +42,17 @@ class _ActiveDebtsScreenState extends State<ActiveDebtsScreen>
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark 
-                ? const Color(0xFF2C2C2E) 
+            color: Theme.of(context).brightness == Brightness.dark
+                ? const Color(0xFF2C2C2E)
                 : const Color(0xFFE5E5EA),
             borderRadius: BorderRadius.circular(14),
           ),
           child: TabBar(
             controller: _tabController,
             labelColor: Colors.white,
-            unselectedLabelColor: Theme.of(context).brightness == Brightness.dark 
-                ? const Color(0xFF8E8E93) 
+            unselectedLabelColor:
+                Theme.of(context).brightness == Brightness.dark
+                ? const Color(0xFF8E8E93)
                 : const Color(0xFF8E8E93),
             indicator: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
@@ -68,11 +69,17 @@ class _ActiveDebtsScreenState extends State<ActiveDebtsScreen>
             tabs: const [
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text('Мне должны', style: TextStyle(fontWeight: FontWeight.w600)),
+                child: Text(
+                  'Мне должны',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
               ),
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text('Я должен', style: TextStyle(fontWeight: FontWeight.w600)),
+                child: Text(
+                  'Я должен',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
               ),
             ],
           ),
@@ -140,23 +147,29 @@ class _DebtList extends StatelessWidget {
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? const Color(0xFF2C2C2E) 
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF2C2C2E)
                         : const Color(0xFFE5E5EA),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    isCreditor ? CupertinoIcons.arrow_down_circle : CupertinoIcons.arrow_up_circle,
+                    isCreditor
+                        ? CupertinoIcons.arrow_down_circle
+                        : CupertinoIcons.arrow_up_circle,
                     size: 50,
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.5),
                   ),
                 ),
                 const SizedBox(height: 20),
                 Text(
                   emptyMessage,
                   style: TextStyle(
-                    fontSize: 17, 
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                    fontSize: 17,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.5),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -197,7 +210,8 @@ class _DebtCard extends StatelessWidget {
   });
 
   Color _getStatusColor() {
-    if (debt.status == DebtStatus.pending) return const Color(0xFFFF9500); // iOS Orange
+    if (debt.status == DebtStatus.pending)
+      return const Color(0xFFFF9500); // iOS Orange
     if (debt.status == DebtStatus.confirmedByCreator ||
         debt.status == DebtStatus.confirmedByParticipant)
       return const Color(0xFF007AFF); // iOS Blue
@@ -215,7 +229,7 @@ class _DebtCard extends StatelessWidget {
         : debt.creatorName;
 
     // Color coding: green for money I'll get, red for money I owe
-    final amountColor = isCreditor 
+    final amountColor = isCreditor
         ? const Color(0xFF34C759) // iOS Green
         : const Color(0xFFFF3B30); // iOS Red
 
@@ -225,9 +239,7 @@ class _DebtCard extends StatelessWidget {
         color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark 
-              ? const Color(0xFF3A3A3C) 
-              : const Color(0xFFE5E5EA),
+          color: isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA),
           width: 1,
         ),
         boxShadow: [
@@ -278,7 +290,7 @@ class _DebtCard extends StatelessWidget {
                         Text(
                           otherName ?? 'Неизвестно',
                           style: const TextStyle(
-                            fontWeight: FontWeight.semibold,
+                            fontWeight: FontWeight.w600,
                             fontSize: 18,
                             letterSpacing: -0.3,
                           ),
@@ -287,7 +299,9 @@ class _DebtCard extends StatelessWidget {
                         Text(
                           isCreditor ? 'Должен вам' : 'Вы должны',
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.5),
                             fontSize: 15,
                           ),
                         ),
@@ -295,7 +309,10 @@ class _DebtCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: amountColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(14),
@@ -312,20 +329,23 @@ class _DebtCard extends StatelessWidget {
                   ),
                 ],
               ),
-              if (debt.description != null &&
-                  debt.description!.isNotEmpty) ...[
+              if (debt.description != null && debt.description!.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
+                    color: isDark
+                        ? const Color(0xFF2C2C2E)
+                        : const Color(0xFFF2F2F7),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
                     debt.description!,
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.8),
                       fontSize: 15,
                       height: 1.4,
                     ),
@@ -338,20 +358,27 @@ class _DebtCard extends StatelessWidget {
                   Icon(
                     CupertinoIcons.clock,
                     size: 16,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.4),
                   ),
                   const SizedBox(width: 6),
                   Text(
                     _formatDate(debt.createdAt),
                     style: TextStyle(
                       fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.5),
                     ),
                   ),
                   const Spacer(),
                   if (myConfirmed)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF34C759).withOpacity(0.12),
                         borderRadius: BorderRadius.circular(10),
@@ -377,7 +404,10 @@ class _DebtCard extends StatelessWidget {
                     )
                   else
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: _getStatusColor().withOpacity(0.12),
                         borderRadius: BorderRadius.circular(10),
@@ -437,7 +467,7 @@ class _DebtCard extends StatelessWidget {
                               confirmLabel,
                               style: const TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.semibold,
+                                fontWeight: FontWeight.w600,
                                 color: Colors.white,
                                 letterSpacing: -0.3,
                               ),
@@ -459,7 +489,7 @@ class _DebtCard extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays == 0) {
       return 'Сегодня';
     } else if (difference.inDays == 1) {
@@ -488,7 +518,9 @@ class _DebtCard extends StatelessWidget {
           ),
           backgroundColor: const Color(0xFF34C759),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           margin: const EdgeInsets.all(16),
         ),
       );

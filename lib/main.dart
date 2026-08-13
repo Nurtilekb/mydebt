@@ -13,7 +13,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await NotificationService().initialize();
-  
+
   // Set system UI overlay style for premium look
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -23,7 +23,7 @@ void main() async {
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
-  
+
   runApp(const MyApp());
 }
 
@@ -70,12 +70,9 @@ class MyApp extends StatelessWidget {
               fontWeight: FontWeight.w600,
               letterSpacing: -0.5,
             ),
-            iconTheme: IconThemeData(
-              color: Color(0xFF1C1C1E),
-              size: 24,
-            ),
+            iconTheme: IconThemeData(color: Color(0xFF1C1C1E), size: 24),
           ),
-          cardTheme: CardTheme(
+          cardTheme: CardThemeData(
             color: Colors.white,
             elevation: 0,
             shape: RoundedRectangleBorder(
@@ -105,10 +102,7 @@ class MyApp extends StatelessWidget {
               horizontal: 20,
               vertical: 16,
             ),
-            hintStyle: const TextStyle(
-              color: Color(0xFF8E8E93),
-              fontSize: 16,
-            ),
+            hintStyle: const TextStyle(color: Color(0xFF8E8E93), fontSize: 16),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
@@ -162,7 +156,7 @@ class MyApp extends StatelessWidget {
             ),
             unselectedLabelStyle: TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.medium,
+              fontWeight: FontWeight.w500,
             ),
           ),
           floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -185,7 +179,7 @@ class MyApp extends StatelessWidget {
             ),
             behavior: SnackBarBehavior.floating,
           ),
-          dialogTheme: DialogTheme(
+          dialogTheme: DialogThemeData(
             backgroundColor: Colors.white,
             elevation: 0,
             shape: RoundedRectangleBorder(
@@ -243,12 +237,9 @@ class MyApp extends StatelessWidget {
               fontWeight: FontWeight.w600,
               letterSpacing: -0.5,
             ),
-            iconTheme: IconThemeData(
-              color: Colors.white,
-              size: 24,
-            ),
+            iconTheme: IconThemeData(color: Colors.white, size: 24),
           ),
-          cardTheme: CardTheme(
+          cardTheme: CardThemeData(
             color: const Color(0xFF1C1C1E),
             elevation: 0,
             shape: RoundedRectangleBorder(
@@ -278,10 +269,7 @@ class MyApp extends StatelessWidget {
               horizontal: 20,
               vertical: 16,
             ),
-            hintStyle: const TextStyle(
-              color: Color(0xFF8E8E93),
-              fontSize: 16,
-            ),
+            hintStyle: const TextStyle(color: Color(0xFF8E8E93), fontSize: 16),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
@@ -335,7 +323,7 @@ class MyApp extends StatelessWidget {
             ),
             unselectedLabelStyle: TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.medium,
+              fontWeight: FontWeight.w500,
             ),
           ),
           floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -358,7 +346,7 @@ class MyApp extends StatelessWidget {
             ),
             behavior: SnackBarBehavior.floating,
           ),
-          dialogTheme: DialogTheme(
+          dialogTheme: DialogThemeData(
             backgroundColor: const Color(0xFF1C1C1E),
             elevation: 0,
             shape: RoundedRectangleBorder(
@@ -421,10 +409,7 @@ class AuthWrapper extends StatelessWidget {
                   SizedBox(height: 24),
                   Text(
                     'Загрузка...',
-                    style: TextStyle(
-                      color: Color(0xFF8E8E93),
-                      fontSize: 15,
-                    ),
+                    style: TextStyle(color: Color(0xFF8E8E93), fontSize: 15),
                   ),
                 ],
               ),
