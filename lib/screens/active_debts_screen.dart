@@ -129,6 +129,7 @@ class _DebtList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return StreamBuilder<List<Debt>>(
       stream: stream,
       builder: (context, snapshot) {
@@ -147,7 +148,7 @@ class _DebtList extends StatelessWidget {
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark
+                    color: isDark
                         ? const Color(0xFF2C2C2E)
                         : const Color(0xFFE5E5EA),
                     shape: BoxShape.circle,
@@ -157,9 +158,9 @@ class _DebtList extends StatelessWidget {
                         ? CupertinoIcons.arrow_down_circle
                         : CupertinoIcons.arrow_up_circle,
                     size: 50,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withOpacity(0.5),
+                    color: isDark
+                        ? const Color(0xFF0A84FF)
+                        : const Color(0xFF007AFF),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -167,9 +168,9 @@ class _DebtList extends StatelessWidget {
                   emptyMessage,
                   style: TextStyle(
                     fontSize: 17,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withOpacity(0.5),
+                    color: isDark
+                        ? const Color(0xFF8E8E93)
+                        : const Color(0xFF8E8E93),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -291,19 +292,20 @@ class _DebtCard extends StatelessWidget {
                       children: [
                         Text(
                           otherName ?? 'Неизвестно',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 18,
                             letterSpacing: -0.3,
+                            color: isDark ? Colors.white : const Color(0xFF000000),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           isCreditor ? 'Должен вам' : 'Вы должны',
                           style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withOpacity(0.5),
+                            color: isDark
+                                ? const Color(0xFF8E8E93)
+                                : const Color(0xFF8E8E93),
                             fontSize: 15,
                           ),
                         ),
@@ -345,9 +347,9 @@ class _DebtCard extends StatelessWidget {
                   child: Text(
                     debt.description!,
                     style: TextStyle(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.8),
+                      color: isDark
+                          ? const Color(0xFFEBEBF5)
+                          : const Color(0xFF3A3A3C),
                       fontSize: 15,
                       height: 1.4,
                     ),
@@ -360,18 +362,18 @@ class _DebtCard extends StatelessWidget {
                   Icon(
                     CupertinoIcons.clock,
                     size: 16,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withOpacity(0.4),
+                    color: isDark
+                        ? const Color(0xFF8E8E93)
+                        : const Color(0xFF8E8E93),
                   ),
                   const SizedBox(width: 6),
                   Text(
                     _formatDate(debt.createdAt),
                     style: TextStyle(
                       fontSize: 14,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.5),
+                      color: isDark
+                          ? const Color(0xFF8E8E93)
+                          : const Color(0xFF8E8E93),
                     ),
                   ),
                   const Spacer(),

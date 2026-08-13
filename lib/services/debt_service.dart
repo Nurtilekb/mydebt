@@ -80,16 +80,38 @@ class DebtService {
     String? participantUid,
     required double amount,
     String? description,
+    DebtType debtType = DebtType.owedToMe,
   }) async {
     final docRef = _debtsRef.doc();
+    
+    // Swap creator and participant based on debt type
+    final actualCreatorPhone = debtType == DebtType.iOwe 
+        ? _digitsOnly(participantPhone) 
+        : _digitsOnly(creatorPhone);
+    final actualCreatorName = debtType == DebtType.iOwe 
+        ? (participantName ?? 'Контакт')
+        : creatorName;
+    final actualParticipantPhone = debtType == DebtType.iOwe
+        ? _digitsOnly(creatorPhone)
+        : _digitsOnly(participantPhone);
+    final actualParticipantName = debtType == DebtType.iOwe
+        ? creatorName
+        : participantName;
+    final actualParticipantUid = debtType == DebtType.iOwe
+        ? creatorUid
+        : participantUid;
+    final actualCreatorUid = debtType == DebtType.iOwe
+        ? (participantUid ?? '')
+        : creatorUid;
+    
     final debt = Debt(
       id: docRef.id,
-      creatorUid: creatorUid,
-      creatorPhone: _digitsOnly(creatorPhone),
-      creatorName: creatorName,
-      participantPhone: _digitsOnly(participantPhone),
-      participantUid: participantUid,
-      participantName: participantName,
+      creatorUid: actualCreatorUid,
+      creatorPhone: actualCreatorPhone,
+      creatorName: actualCreatorName,
+      participantPhone: actualParticipantPhone,
+      participantUid: actualParticipantUid,
+      participantName: actualParticipantName,
       amount: amount,
       description: description,
       createdAt: DateTime.now(),

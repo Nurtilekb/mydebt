@@ -505,16 +505,16 @@ class _HomeScreenState extends State<HomeScreen>
                                 'Настройки аккаунта',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface.withOpacity(0.5),
+                                  color: isDark
+                                      ? const Color(0xFF8E8E93)
+                                      : const Color(0xFF8E8E93),
                                 ),
                               ),
                               trailing: Icon(
                                 CupertinoIcons.chevron_right,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withOpacity(0.3),
+                                color: isDark
+                                    ? const Color(0xFF48484A)
+                                    : const Color(0xFFC7C7CC),
                               ),
                               onTap: () {},
                             ),
@@ -551,16 +551,16 @@ class _HomeScreenState extends State<HomeScreen>
                                 'Оповещения о долгах',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface.withOpacity(0.5),
+                                  color: isDark
+                                      ? const Color(0xFF8E8E93)
+                                      : const Color(0xFF8E8E93),
                                 ),
                               ),
                               trailing: Icon(
                                 CupertinoIcons.chevron_right,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withOpacity(0.3),
+                                color: isDark
+                                    ? const Color(0xFF48484A)
+                                    : const Color(0xFFC7C7CC),
                               ),
                               onTap: () {},
                             ),
