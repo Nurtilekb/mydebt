@@ -39,15 +39,43 @@ class _ActiveDebtsScreenState extends State<ActiveDebtsScreen>
 
     return Column(
       children: [
-        TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Мне должны'),
-            Tab(text: 'Я должен'),
-          ],
-          labelColor: Theme.of(context).colorScheme.primary,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Theme.of(context).colorScheme.primary,
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.dark 
+                ? const Color(0xFF2C2C2E) 
+                : const Color(0xFFE5E5EA),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: TabBar(
+            controller: _tabController,
+            labelColor: Colors.white,
+            unselectedLabelColor: Theme.of(context).brightness == Brightness.dark 
+                ? const Color(0xFF8E8E93) 
+                : const Color(0xFF8E8E93),
+            indicator: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.secondary,
+                ],
+              ),
+            ),
+            indicatorSize: TabBarIndicatorSize.tab,
+            dividerColor: Colors.transparent,
+            padding: EdgeInsets.zero,
+            tabs: const [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text('Мне должны', style: TextStyle(fontWeight: FontWeight.w600)),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text('Я должен', style: TextStyle(fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
         ),
         Expanded(
           child: TabBarView(
@@ -59,6 +87,7 @@ class _ActiveDebtsScreenState extends State<ActiveDebtsScreen>
                 myRole: 'creator',
                 emptyMessage: 'Нет долгов, которые вам должны',
                 confirmLabel: 'Я получил, подтверждаю',
+                isCreditor: true,
               ),
               // Tab 2: "Я должен" — I'm participant, someone lent to me, I owe
               _DebtList(
@@ -66,6 +95,7 @@ class _ActiveDebtsScreenState extends State<ActiveDebtsScreen>
                 myRole: 'participant',
                 emptyMessage: 'Нет долгов, которые вы должны',
                 confirmLabel: 'Я оплатил, подтверждаю',
+                isCreditor: false,
               ),
             ],
           ),
@@ -80,12 +110,14 @@ class _DebtList extends StatelessWidget {
   final String myRole;
   final String emptyMessage;
   final String confirmLabel;
+  final bool isCreditor;
 
   const _DebtList({
     required this.stream,
     required this.myRole,
     required this.emptyMessage,
     required this.confirmLabel,
+    required this.isCreditor,
   });
 
   @override
@@ -94,7 +126,7 @@ class _DebtList extends StatelessWidget {
       stream: stream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: CupertinoActivityIndicator());
         }
 
         final debts = snapshot.data ?? [];
@@ -105,22 +137,28 @@ class _DebtList extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? const Color(0xFF2C2C2E) 
+                        : const Color(0xFFE5E5EA),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    CupertinoIcons.doc_text,
-                    size: 40,
-                    color: Colors.grey[400],
+                    isCreditor ? CupertinoIcons.arrow_down_circle : CupertinoIcons.arrow_up_circle,
+                    size: 50,
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 Text(
                   emptyMessage,
-                  style: TextStyle(fontSize: 17, color: Colors.grey[500]),
+                  style: TextStyle(
+                    fontSize: 17, 
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
@@ -136,6 +174,7 @@ class _DebtList extends StatelessWidget {
               debt: debt,
               myRole: myRole,
               confirmLabel: confirmLabel,
+              isCreditor: isCreditor,
             );
           },
         );
@@ -148,11 +187,13 @@ class _DebtCard extends StatelessWidget {
   final Debt debt;
   final String myRole;
   final String confirmLabel;
+  final bool isCreditor;
 
   const _DebtCard({
     required this.debt,
     required this.myRole,
     required this.confirmLabel,
+    required this.isCreditor,
   });
 
   Color _getStatusColor() {
@@ -174,7 +215,6 @@ class _DebtCard extends StatelessWidget {
         : debt.creatorName;
 
     // Color coding: green for money I'll get, red for money I owe
-    final isCreditor = myRole == 'creator';
     final amountColor = isCreditor 
         ? const Color(0xFF34C759) // iOS Green
         : const Color(0xFFFF3B30); // iOS Red
@@ -216,18 +256,18 @@ class _DebtCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 56,
-                    height: 56,
+                    width: 60,
+                    height: 60,
                     decoration: BoxDecoration(
                       color: _getStatusColor().withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: Icon(
                       isCreditor
                           ? CupertinoIcons.arrow_down_left
                           : CupertinoIcons.arrow_up_right,
                       color: _getStatusColor(),
-                      size: 28,
+                      size: 30,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -255,16 +295,16 @@ class _DebtCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: amountColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Text(
                       '${debt.amount.toStringAsFixed(0)} ₽',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 20,
+                        fontSize: 22,
                         letterSpacing: -0.5,
                         color: amountColor,
                       ),
