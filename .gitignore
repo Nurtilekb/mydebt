@@ -1,30 +1,57 @@
 ```
-# Dependency directories
-.dart_tool/
+# Dependencies
+.pub/
 .build/
-.dependencies/
+.dart_tool/
 
 # Logs
 *.log
 
-# Environment variables
+# Environment
 .env
 .env.local
 *.env.*
-
-# IDE files
-.idea/
-.vscode/
-*.swp
-*.swo
 
 # OS generated files
 .DS_Store
 Thumbs.db
 
-# Coverage reports
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+build/
+dist/
+target/
+
+# Python related (if any Python files exist in project)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+
+# Node related (if any JS/TS files exist in project)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage
 coverage/
 htmlcov/
+.coverage
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
 
 # Compressed files
 *.zip

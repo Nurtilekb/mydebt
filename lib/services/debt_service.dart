@@ -21,7 +21,9 @@ class DebtService {
       for (final doc in snapshot.docs) {
         try {
           final data = doc.data() as Map<String, dynamic>;
-          print('DebtService: Processing user ${doc.id}, data keys: ${data.keys.toList()}');
+          print(
+            'DebtService: Processing user ${doc.id}, data keys: ${data.keys.toList()}',
+          );
           final phone = (data['phone'] ?? '').toString();
           String name = (data['displayName'] ?? '').toString();
           if (name.isEmpty) {
@@ -83,12 +85,12 @@ class DebtService {
     DebtType debtType = DebtType.owedToMe,
   }) async {
     final docRef = _debtsRef.doc();
-    
+
     // Swap creator and participant based on debt type
-    final actualCreatorPhone = debtType == DebtType.iOwe 
-        ? _digitsOnly(participantPhone) 
+    final actualCreatorPhone = debtType == DebtType.iOwe
+        ? _digitsOnly(participantPhone)
         : _digitsOnly(creatorPhone);
-    final actualCreatorName = debtType == DebtType.iOwe 
+    final actualCreatorName = debtType == DebtType.iOwe
         ? (participantName ?? 'Контакт')
         : creatorName;
     final actualParticipantPhone = debtType == DebtType.iOwe
@@ -103,7 +105,7 @@ class DebtService {
     final actualCreatorUid = debtType == DebtType.iOwe
         ? (participantUid ?? '')
         : creatorUid;
-    
+
     final debt = Debt(
       id: docRef.id,
       creatorUid: actualCreatorUid,
@@ -128,7 +130,7 @@ class DebtService {
         .map((snapshot) {
           return snapshot.docs
               .map((doc) => Debt.fromMap(doc.data() as Map<String, dynamic>))
-              .where((d) => !d.isClosed)
+              .where((d) => !d.isClosed && d.debtType == DebtType.owedToMe)
               .toList()
             ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
         });
@@ -143,7 +145,7 @@ class DebtService {
         .map((snapshot) {
           return snapshot.docs
               .map((doc) => Debt.fromMap(doc.data() as Map<String, dynamic>))
-              .where((d) => !d.isClosed)
+              .where((d) => !d.isClosed && d.debtType == DebtType.iOwe)
               .toList()
             ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
         });

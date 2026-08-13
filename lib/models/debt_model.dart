@@ -25,7 +25,7 @@ class Debt {
   final DebtStatus status;
   final Map<String, bool> confirmations;
   final bool archived;
-
+  final DebtType debtType;
   Debt({
     required this.id,
     required this.creatorUid,
@@ -41,6 +41,7 @@ class Debt {
     this.status = DebtStatus.pending,
     this.confirmations = const {},
     this.archived = false,
+    this.debtType = DebtType.owedToMe,
   });
 
   bool get isClosed =>
@@ -77,7 +78,16 @@ class Debt {
       status: _parseStatus(data['status']),
       confirmations: Map<String, bool>.from(data['confirmations'] ?? {}),
       archived: data['archived'] ?? false,
+      debtType: _parseDebtType(data['debtType']),
     );
+  }
+  static DebtType _parseDebtType(String? value) {
+    switch (value) {
+      case 'iOwe':
+        return DebtType.iOwe;
+      default:
+        return DebtType.owedToMe;
+    }
   }
 
   static DebtStatus _parseStatus(String? value) {
@@ -111,6 +121,7 @@ class Debt {
       'status': status.name,
       'confirmations': confirmations,
       'archived': archived,
+      'debtType': debtType.name,
     };
   }
 }

@@ -137,6 +137,9 @@ class _HistoryScreenState extends State<HistoryScreen>
                 myRole: 'creator',
                 emptyMessage: 'Нет завершённых долгов, которые вам должны',
                 isCreditor: true,
+                filterQuery: _filterQuery,
+                sortBy: _sortBy,
+                debtType: DebtType.owedToMe,
               ),
               // Tab 2: "Я должен" — I'm participant, someone lent to me, I owe
               _HistoryList(
@@ -144,6 +147,9 @@ class _HistoryScreenState extends State<HistoryScreen>
                 myRole: 'participant',
                 emptyMessage: 'Нет завершённых долгов, которые вы должны',
                 isCreditor: false,
+                filterQuery: _filterQuery,
+                sortBy: _sortBy,
+                debtType: DebtType.iOwe,
               ),
             ],
           ),
@@ -158,12 +164,18 @@ class _HistoryList extends StatefulWidget {
   final String myRole;
   final String emptyMessage;
   final bool isCreditor;
+  final String filterQuery;
+  final String sortBy;
+  final DebtType debtType;
 
   const _HistoryList({
     required this.stream,
     required this.myRole,
     required this.emptyMessage,
     required this.isCreditor,
+    required this.filterQuery,
+    required this.sortBy,
+    required this.debtType,
   });
 
   @override
@@ -171,101 +183,98 @@ class _HistoryList extends StatefulWidget {
 }
 
 class _HistoryListState extends State<_HistoryList> {
-  String _filterQuery = '';
-  String _sortBy = 'date';
-
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: StreamBuilder<List<Debt>>(
-            stream: widget.stream,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CupertinoActivityIndicator());
-              }
+    return StreamBuilder<List<Debt>>(
+      stream: widget.stream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CupertinoActivityIndicator());
+        }
 
-              var debts = snapshot.data ?? [];
+        var debts = snapshot.data ?? [];
 
-              // Filter only closed debts
-              debts = debts.where((d) => d.status == DebtStatus.closed).toList();
+        // Filter only closed debts
+        debts = debts
+            .where(
+              (d) =>
+                  d.debtType == widget.debtType &&
+                  d.status == DebtStatus.closed,
+            )
+            .toList();
 
-              // Apply filter
-              if (_filterQuery.isNotEmpty) {
-                debts = debts
-                    .where(
-                      (d) =>
-                          (d.description ?? '').toLowerCase().contains(
-                            _filterQuery.toLowerCase(),
-                          ) ||
-                          d.creatorName.toLowerCase().contains(
-                            _filterQuery.toLowerCase(),
-                          ) ||
-                          (d.participantName ?? '').toLowerCase().contains(
-                            _filterQuery.toLowerCase(),
-                          ),
-                    )
-                    .toList();
-              }
+        // Apply filter
+        if (widget.filterQuery.isNotEmpty) {
+          debts = debts
+              .where(
+                (d) =>
+                    (d.description ?? '').toLowerCase().contains(
+                      widget.filterQuery.toLowerCase(),
+                    ) ||
+                    d.creatorName.toLowerCase().contains(
+                      widget.filterQuery.toLowerCase(),
+                    ) ||
+                    (d.participantName ?? '').toLowerCase().contains(
+                      widget.filterQuery.toLowerCase(),
+                    ),
+              )
+              .toList();
+        }
 
-              // Apply sort
-              if (_sortBy == 'amount') {
-                debts.sort((a, b) => b.amount.compareTo(a.amount));
-              }
+        // Apply sort
+        if (widget.sortBy == 'amount') {
+          debts.sort((a, b) => b.amount.compareTo(a.amount));
+        }
 
-              if (debts.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? const Color(0xFF2C2C2E)
-                              : const Color(0xFFE5E5EA),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          widget.isCreditor
-                              ? CupertinoIcons.arrow_down_circle
-                              : CupertinoIcons.arrow_up_circle,
-                          size: 50,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? const Color(0xFF0A84FF)
-                              : const Color(0xFF007AFF),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        widget.emptyMessage,
-                        style: TextStyle(
-                          fontSize: 17,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? const Color(0xFF8E8E93)
-                              : const Color(0xFF8E8E93),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+        if (debts.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF2C2C2E)
+                        : const Color(0xFFE5E5EA),
+                    shape: BoxShape.circle,
                   ),
-                );
-              }
+                  child: Icon(
+                    widget.isCreditor
+                        ? CupertinoIcons.arrow_down_circle
+                        : CupertinoIcons.arrow_up_circle,
+                    size: 50,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF0A84FF)
+                        : const Color(0xFF007AFF),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  widget.emptyMessage,
+                  style: TextStyle(
+                    fontSize: 17,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF8E8E93)
+                        : const Color(0xFF8E8E93),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
 
-              return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: debts.length,
-                itemBuilder: (context, index) {
-                  final debt = debts[index];
-                  return _HistoryCard(debt: debt, isCreditor: widget.isCreditor);
-                },
-              );
-            },
-          ),
-        ),
-      ],
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: debts.length,
+          itemBuilder: (context, index) {
+            final debt = debts[index];
+            return _HistoryCard(debt: debt, isCreditor: widget.isCreditor);
+          },
+        );
+      },
     );
   }
 }
@@ -348,7 +357,9 @@ class _HistoryCard extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                           fontSize: 17,
                           letterSpacing: -0.3,
-                          color: isDark ? Colors.white : const Color(0xFF000000),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF000000),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -411,10 +422,11 @@ class _HistoryCard extends StatelessWidget {
   }
 
   void _showDetails(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
+      builder: (context) => Container(
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -485,6 +497,7 @@ class _HistoryCard extends StatelessWidget {
   }
 
   void _confirmDelete(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
@@ -504,9 +517,7 @@ class _HistoryCard extends StatelessWidget {
           child: Text(
             'Это действие нельзя отменить',
             style: TextStyle(
-              color: isDark
-                  ? const Color(0xFFEBEBF5)
-                  : const Color(0xFF3A3A3C),
+              color: isDark ? const Color(0xFFEBEBF5) : const Color(0xFF3A3A3C),
               fontSize: 15,
             ),
           ),
@@ -553,9 +564,7 @@ class _DetailRow extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: isDark
-                  ? const Color(0xFF8E8E93)
-                  : const Color(0xFF8E8E93),
+              color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93),
               fontSize: 15,
             ),
           ),
