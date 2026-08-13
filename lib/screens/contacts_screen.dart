@@ -24,17 +24,20 @@ class ContactsScreen extends StatelessWidget {
           ),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                child: Text(
-                  (currentUser?.displayName ?? 'U').isNotEmpty
-                      ? (currentUser?.displayName ?? 'U')[0].toUpperCase()
-                      : 'U',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+              Hero(
+                tag: 'user_avatar',
+                child: CircleAvatar(
+                  radius: 32,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  child: Text(
+                    (currentUser?.displayName ?? 'U').isNotEmpty
+                        ? (currentUser?.displayName ?? 'U')[0].toUpperCase()
+                        : 'U',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -46,16 +49,31 @@ class ContactsScreen extends StatelessWidget {
                     Text(
                       currentUser?.displayName ?? 'Пользователь',
                       style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                        letterSpacing: -0.5,
                       ),
                     ),
-                    Text(
-                      currentUser?.phoneNumber ?? '',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          CupertinoIcons.phone_fill,
+                          size: 14,
+                          color: Colors.grey[500],
+                        ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            currentUser?.phoneNumber ?? '',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -69,26 +87,99 @@ class ContactsScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
+              Icon(
+                CupertinoIcons.person_2_fill,
+                size: 18,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
               Text(
                 'Зарегистрированные контакты',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: Colors.grey[600],
+                  letterSpacing: -0.3,
                 ),
+              ),
+              const Spacer(),
+              StreamBuilder<List<Map<String, dynamic>>>(
+                stream: debtService.getRegisteredUsers(),
+                builder: (context, snapshot) {
+                  final count = (snapshot.data ?? []).length - 1;
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$count',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
-
         // Contacts list
         Expanded(
           child: StreamBuilder<List<Map<String, dynamic>>>(
             stream: debtService.getRegisteredUsers(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 44,
+                        height: 44,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Загрузка контактов...',
+                        style: TextStyle(color: Colors.grey[500]),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        CupertinoIcons.exclamationmark_triangle,
+                        size: 48,
+                        color: Colors.red[300],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Ошибка загрузки',
+                        style: TextStyle(color: Colors.red[400]),
+                      ),
+                    ],
+                  ),
+                );
               }
 
               final users = snapshot.data ?? [];
@@ -117,8 +208,7 @@ class ContactsScreen extends StatelessWidget {
                       const SizedBox(height: 16),
                       Text(
                         'Нет других пользователей',
-                        style:
-                            TextStyle(fontSize: 17, color: Colors.grey[500]),
+                        style: TextStyle(fontSize: 17, color: Colors.grey[500]),
                       ),
                     ],
                   ),

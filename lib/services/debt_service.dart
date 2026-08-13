@@ -18,12 +18,14 @@ class DebtService {
       return snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         final phone = (data['phone'] ?? '').toString();
-        final name = (data['displayName'] ?? data['name'] ?? '').toString();
-        return {
-          'uid': doc.id,
-          'name': name.isNotEmpty ? name : phone,
-          'phone': phone,
-        };
+        String name = (data['displayName'] ?? '').toString();
+        if (name.isEmpty) {
+          name = (data['name'] ?? '').toString();
+        }
+        if (name.isEmpty) {
+          name = phone.isNotEmpty ? phone : 'Пользователь';
+        }
+        return {'uid': doc.id, 'name': name, 'phone': phone};
       }).toList();
     });
   }
@@ -33,8 +35,10 @@ class DebtService {
     if (queryDigits.isEmpty) return null;
 
     // Try exact match first
-    var snapshot =
-        await _usersRef.where('phone', isEqualTo: phone).limit(1).get();
+    var snapshot = await _usersRef
+        .where('phone', isEqualTo: phone)
+        .limit(1)
+        .get();
     if (snapshot.docs.isNotEmpty) {
       final data = snapshot.docs.first.data() as Map<String, dynamic>;
       return {'uid': snapshot.docs.first.id, ...data};
@@ -88,12 +92,12 @@ class DebtService {
         .where('archived', isEqualTo: false)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => Debt.fromMap(doc.data() as Map<String, dynamic>))
-          .where((d) => !d.isClosed)
-          .toList()
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    });
+          return snapshot.docs
+              .map((doc) => Debt.fromMap(doc.data() as Map<String, dynamic>))
+              .where((d) => !d.isClosed)
+              .toList()
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        });
   }
 
   Stream<List<Debt>> getParticipantDebts(String userPhone) {
@@ -103,28 +107,30 @@ class DebtService {
         .where('archived', isEqualTo: false)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => Debt.fromMap(doc.data() as Map<String, dynamic>))
-          .where((d) => !d.isClosed)
-          .toList()
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    });
+          return snapshot.docs
+              .map((doc) => Debt.fromMap(doc.data() as Map<String, dynamic>))
+              .where((d) => !d.isClosed)
+              .toList()
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        });
   }
 
   Stream<List<Debt>> getArchivedDebts(String userPhone) {
     final normalized = _digitsOnly(userPhone);
-    return _debtsRef
-        .where('archived', isEqualTo: true)
-        .snapshots()
-        .map((snapshot) {
+    return _debtsRef.where('archived', isEqualTo: true).snapshots().map((
+      snapshot,
+    ) {
       return snapshot.docs
           .map((doc) => Debt.fromMap(doc.data() as Map<String, dynamic>))
-          .where((debt) =>
-              debt.creatorPhone == normalized ||
-              debt.participantPhone == normalized)
+          .where(
+            (debt) =>
+                debt.creatorPhone == normalized ||
+                debt.participantPhone == normalized,
+          )
           .toList()
-        ..sort((a, b) =>
-            b.closedAt?.compareTo(a.closedAt ?? DateTime.now()) ?? 0);
+        ..sort(
+          (a, b) => b.closedAt?.compareTo(a.closedAt ?? DateTime.now()) ?? 0,
+        );
     });
   }
 
