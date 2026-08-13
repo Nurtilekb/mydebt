@@ -49,19 +49,56 @@ class AuthScreen extends StatelessWidget {
               ),
               const SizedBox(height: 48),
 
-              ElevatedButton.icon(
-                onPressed: () async {
-                  final authService = context.read<AuthService>();
-                  await authService.signInWithGoogle();
-                },
-                icon: Icon(Icons.email),
-                label: const Text('Войти через Google'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black87,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 16,
+              // Google Sign-In Button - iPhone Style
+              Container(
+                width: double.infinity,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () async {
+                      // Dismiss keyboard before sign-in
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      await Future.delayed(const Duration(milliseconds: 50));
+                      
+                      final authService = context.read<AuthService>();
+                      await authService.signInWithGoogle();
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.network(
+                            'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                            height: 24,
+                            width: 24,
+                            errorBuilder: (context, error, stackTrace) => 
+                                Icon(Icons.g_mobiledata, size: 24, color: Colors.black),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Войти через Google',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),

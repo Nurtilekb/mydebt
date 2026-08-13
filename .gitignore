@@ -1,56 +1,56 @@
 ```
-# Flutter/Dart specific
-.dart_tool/
-.build/
-.packages
-pubspec.lock
-
-# IDE files
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Logs
-*.log
-*.tmp
-
-# Environment
-.env
-.env.local
-*.env.*
+# Build artifacts
+*.apk
+*.aar
+*.so
+*.dex
+build/
+app/build/
 
 # Dependencies
 node_modules/
 vendor/
+Pods/
 
-# Build artifacts
-build/
-dist/
-target/
+# Logs
+*.log
+**/logs/
 
-# Python related (if any Python components)
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
+# Environment
+.env
+.env.local
+.env.*
 
-# Compiled Binary files
-*.class
-*.o
-*.so
-*.a
-*.dll
-*.exe
-*.out
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
 
-# OS generated files
+# OS files
 .DS_Store
 Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+*.coverage
+
+# Gradle
+.gradle/
+!android/.gradle/
+!android/app/.gradle/
+
+# Dart/Flutter specific
+.dart_tool/
+.packages
+.pub/
+build/
+*.g.dart
+*.freezed.dart
+
+# Android specific
+*.keystore
+local.properties
 ```
