@@ -9,8 +9,9 @@ class ContactsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final debtService = context.read<DebtService>();
-    final currentUser = context.read<AuthService>().currentUser;
+    final debtService = context.watch<DebtService>();
+    final authService = context.watch<AuthService>();
+    final currentUser = authService.currentUser;
 
     return Column(
       children: [
@@ -183,9 +184,11 @@ class ContactsScreen extends StatelessWidget {
               }
 
               final users = snapshot.data ?? [];
-              final otherUsers = users
-                  .where((u) => u['uid'] != currentUser?.uid)
-                  .toList();
+              
+              // Если текущий пользователь null, показываем всех пользователей
+              final otherUsers = currentUser == null
+                  ? users
+                  : users.where((u) => u['uid'] != currentUser!.uid).toList();
 
               if (otherUsers.isEmpty) {
                 return Center(
@@ -287,7 +290,7 @@ class ContactsScreen extends StatelessWidget {
                   ),
                 );
                 if (confirmed == true && context.mounted) {
-                  await context.read<AuthService>().signOut();
+                  await authService.signOut();
                 }
               },
               icon: const Icon(
