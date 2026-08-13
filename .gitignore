@@ -1,56 +1,47 @@
 ```
-# Build artifacts
-*.apk
-*.aar
-*.so
-*.dex
-build/
-app/build/
-
 # Dependencies
-node_modules/
-vendor/
-Pods/
-
-# Logs
-*.log
-**/logs/
+.dart_tool/
+.build/
+.dependencies/
 
 # Environment
 .env
 .env.local
 .env.*
 
-# IDE files
-.idea/
-*.iml
-.vscode/
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-Thumbs.db
+# Logs
+*.log
+**/logs
 
 # Coverage
 coverage/
-htmlcov/
-*.coverage
+lcov.info
 
-# Gradle
-.gradle/
-!android/.gradle/
-!android/app/.gradle/
+# iOS
+ios/Pods/
+ios/build/
+ios/.symlinks/
+Podfile.lock
 
-# Dart/Flutter specific
-.dart_tool/
-.packages
-.pub/
-build/
-*.g.dart
-*.freezed.dart
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/key.properties
 
-# Android specific
-*.keystore
-local.properties
+# Flutter
+flutter/
+**/generated_plugin_registrant.dart
+**/generated_plugins.cmake
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
 ```
