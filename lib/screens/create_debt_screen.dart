@@ -220,6 +220,8 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
                 controller: _amountController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
                   border: InputBorder.none,
                   hintText: 'Сумма',
                   hintStyle: TextStyle(color: Colors.grey),
@@ -240,6 +242,7 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
                 controller: _descController,
                 maxLines: 3,
                 decoration: const InputDecoration(
+                  fillColor: Colors.white,
                   border: InputBorder.none,
                   hintText: 'Комментарий (необязательно)',
                   hintStyle: TextStyle(color: Colors.grey),
@@ -421,13 +424,7 @@ class _CreateDebtScreenState extends State<CreateDebtScreen> {
                                       fontSize: 16,
                                     ),
                                   ),
-                                  subtitle: Text(
-                                    contact['phone'],
-                                    style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontSize: 13,
-                                    ),
-                                  ),
+
                                   trailing: isSelected
                                       ? const Icon(
                                           Icons.check_circle,

@@ -42,15 +42,18 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
         final myRole = isCreator ? 'creator' : 'participant';
         final myConfirmed = debt.confirmations[myRole] == true;
         final otherConfirmed =
-            debt.confirmations[myRole == 'creator' ? 'participant' : 'creator'] ==
-                true;
+            debt.confirmations[myRole == 'creator'
+                ? 'participant'
+                : 'creator'] ==
+            true;
 
         // Other person's info
         final otherName = isCreator
             ? (debt.participantName ?? debt.participantPhone)
             : debt.creatorName;
-        final otherPhone =
-            isCreator ? debt.participantPhone : debt.creatorPhone;
+        final otherPhone = isCreator
+            ? debt.participantPhone
+            : debt.creatorPhone;
 
         final confirmButtonText = isCreator
             ? 'Я получил, подтверждаю'
@@ -76,8 +79,8 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                 Card(
                   color: debt.isClosed
                       ? (debt.status == DebtStatus.closed
-                          ? Colors.green[50]
-                          : Colors.red[50])
+                            ? Colors.green[50]
+                            : Colors.red[50])
                       : Theme.of(context).colorScheme.primaryContainer,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -93,18 +96,21 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                             fontWeight: FontWeight.bold,
                             color: debt.isClosed
                                 ? (debt.status == DebtStatus.closed
-                                    ? Colors.green
-                                    : Colors.red)
-                                : Theme.of(context).colorScheme.primary,
+                                      ? Colors.green
+                                      : Colors.red)
+                                : Colors.white,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
-                            color: _getStatusColor(debt.status)
-                                .withOpacity(0.1),
+                            color: _getStatusColor(
+                              debt.status,
+                            ).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -117,9 +123,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          isCreator
-                              ? 'Вы дали в долг'
-                              : 'Вам дали в долг',
+                          isCreator ? 'Вы дали в долг' : 'Вам дали в долг',
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 14,
@@ -135,8 +139,8 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                 Text(
                   isCreator ? 'Кому вы дали' : 'Кто вам дал',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Card(
@@ -147,9 +151,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                     leading: CircleAvatar(
                       backgroundColor: Colors.blue[100],
                       child: Text(
-                        otherName.isNotEmpty
-                            ? otherName[0].toUpperCase()
-                            : '?',
+                        otherName.isNotEmpty ? otherName[0].toUpperCase() : '?',
                         style: TextStyle(
                           color: Colors.blue[700],
                           fontWeight: FontWeight.bold,
@@ -168,8 +170,8 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                   Text(
                     'Описание',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Card(
@@ -188,8 +190,8 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                 Text(
                   'Подтверждение',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Card(
@@ -274,8 +276,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                         padding: const EdgeInsets.all(16),
                         child: Row(
                           children: [
-                            const Icon(Icons.check_circle,
-                                color: Colors.green),
+                            const Icon(Icons.check_circle, color: Colors.green),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
@@ -296,8 +297,10 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                         // Main confirm button
                         ElevatedButton.icon(
                           onPressed: () => _confirmDebt(debt),
-                          icon: const Icon(Icons.check_circle_outline,
-                              size: 22),
+                          icon: const Icon(
+                            Icons.check_circle_outline,
+                            size: 22,
+                          ),
                           label: Text(
                             confirmButtonText,
                             style: const TextStyle(
@@ -308,8 +311,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
                             foregroundColor: Colors.white,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -321,8 +323,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                           onPressed: () => _rejectDebt(debt),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.red,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -375,9 +376,9 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
     await context.read<DebtService>().confirmDebt(debt.id, role);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Подтверждено')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Подтверждено')));
     }
   }
 
@@ -404,9 +405,9 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
     if (confirmed == true) {
       await context.read<DebtService>().rejectDebt(debt.id);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Долг отклонён')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Долг отклонён')));
       }
     }
   }

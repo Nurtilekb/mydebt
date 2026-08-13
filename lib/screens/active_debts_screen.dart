@@ -178,18 +178,20 @@ class _DebtList extends StatelessWidget {
           );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: debts.length,
-          itemBuilder: (context, index) {
-            final debt = debts[index];
-            return _DebtCard(
-              debt: debt,
-              myRole: myRole,
-              confirmLabel: confirmLabel,
-              isCreditor: isCreditor,
-            );
-          },
+        return SafeArea(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: debts.length,
+            itemBuilder: (context, index) {
+              final debt = debts[index];
+              return _DebtCard(
+                debt: debt,
+                myRole: myRole,
+                confirmLabel: confirmLabel,
+                isCreditor: isCreditor,
+              );
+            },
+          ),
         );
       },
     );
