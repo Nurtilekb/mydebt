@@ -13,6 +13,10 @@ class ContactsScreen extends StatelessWidget {
     final authService = context.watch<AuthService>();
     final currentUser = authService.currentUser;
 
+    // Debug logging
+    print('ContactsScreen: currentUser = ${currentUser?.uid ?? "null"}');
+    print('ContactsScreen: currentUser email = ${currentUser?.email ?? "null"}');
+
     return Column(
       children: [
         // Current user info
@@ -185,10 +189,14 @@ class ContactsScreen extends StatelessWidget {
 
               final users = snapshot.data ?? [];
               
-              // Если текущий пользователь null, показываем всех пользователей
+              // Фильтруем: исключаем текущего пользователя из списка
               final otherUsers = currentUser == null
                   ? users
-                  : users.where((u) => u['uid'] != currentUser!.uid).toList();
+                  : users.where((u) {
+                      final userUid = u['uid']?.toString() ?? '';
+                      final currentUid = currentUser.uid;
+                      return userUid != currentUid;
+                    }).toList();
 
               if (otherUsers.isEmpty) {
                 return Center(
@@ -210,9 +218,18 @@ class ContactsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Нет других пользователей',
+                        users.isEmpty 
+                            ? 'Нет зарегистрированных пользователей' 
+                            : 'Нет других пользователей',
                         style: TextStyle(fontSize: 17, color: Colors.grey[500]),
                       ),
+                      if (users.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Всего пользователей: ${users.length}',
+                          style: TextStyle(fontSize: 14, color: Colors.grey[400]),
+                        ),
+                      ],
                     ],
                   ),
                 );
@@ -223,6 +240,8 @@ class ContactsScreen extends StatelessWidget {
                 itemCount: otherUsers.length,
                 itemBuilder: (context, index) {
                   final contact = otherUsers[index];
+                  final name = (contact['name'] ?? '').toString();
+                  final phone = (contact['phone'] ?? '').toString();
                   return Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
@@ -234,9 +253,7 @@ class ContactsScreen extends StatelessWidget {
                       leading: CircleAvatar(
                         backgroundColor: Colors.blue[100],
                         child: Text(
-                          (contact['name'] as String).isNotEmpty
-                              ? (contact['name'] as String)[0].toUpperCase()
-                              : '?',
+                          name.isNotEmpty ? name[0].toUpperCase() : '?',
                           style: TextStyle(
                             color: Colors.blue[700],
                             fontWeight: FontWeight.bold,
@@ -244,14 +261,14 @@ class ContactsScreen extends StatelessWidget {
                         ),
                       ),
                       title: Text(
-                        contact['name'],
+                        name,
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                         ),
                       ),
                       subtitle: Text(
-                        contact['phone'],
+                        phone,
                         style: TextStyle(color: Colors.grey[500], fontSize: 14),
                       ),
                     ),
