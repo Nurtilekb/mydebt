@@ -11,13 +11,14 @@ __pycache__/
 *.a
 *.out
 
-# Dependencies
-node_modules/
-venv/
-.venv/
-.env
-.env.local
-.env.*
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+*.swp
+*.swo
+*~
 
 # Build outputs
 dist/
