@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+enum DebtType { owedToMe, iOwe }
+
 enum DebtStatus {
   pending,
   confirmedByCreator,
