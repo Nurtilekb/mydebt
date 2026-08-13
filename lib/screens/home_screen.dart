@@ -474,97 +474,90 @@ class _HomeScreenState extends State<HomeScreen>
                           : const Color(0xFFF2F2F7),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: ListView(
-                      shrinkWrap: true,
+                    child: Column(
                       children: [
-                        Column(
-                          children: [
-                            ListTile(
-                              leading: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.primary.withOpacity(0.12),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Icon(
-                                  CupertinoIcons.person_fill,
-                                  color: Theme.of(context).colorScheme.primary,
-                                  size: 20,
-                                ),
-                              ),
-                              title: const Text(
-                                'Профиль',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              subtitle: Text(
-                                'Настройки аккаунта',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: isDark
-                                      ? const Color(0xFF8E8E93)
-                                      : const Color(0xFF8E8E93),
-                                ),
-                              ),
-                              trailing: Icon(
-                                CupertinoIcons.chevron_right,
-                                color: isDark
-                                    ? const Color(0xFF48484A)
-                                    : const Color(0xFFC7C7CC),
-                              ),
-                              onTap: () {},
+                        ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            Divider(
-                              height: 1,
-                              color: (isDark ? Colors.white : Colors.black)
-                                  .withOpacity(0.1),
+                            child: Icon(
+                              CupertinoIcons.person_fill,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 20,
                             ),
-                            ListTile(
-                              leading: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.secondary.withOpacity(0.12),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Icon(
-                                  CupertinoIcons.bell_fill,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.secondary,
-                                  size: 20,
-                                ),
-                              ),
-                              title: const Text(
-                                'Уведомления',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              subtitle: Text(
-                                'Оповещения о долгах',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: isDark
-                                      ? const Color(0xFF8E8E93)
-                                      : const Color(0xFF8E8E93),
-                                ),
-                              ),
-                              trailing: Icon(
-                                CupertinoIcons.chevron_right,
-                                color: isDark
-                                    ? const Color(0xFF48484A)
-                                    : const Color(0xFFC7C7CC),
-                              ),
-                              onTap: () {},
+                          ),
+                          title: const Text(
+                            'Профиль',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
                             ),
-                          ],
+                          ),
+                          subtitle: Text(
+                            'Настройки аккаунта',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.5),
+                            ),
+                          ),
+                          trailing: Icon(
+                            CupertinoIcons.chevron_right,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.3),
+                          ),
+                          onTap: () {},
+                        ),
+                        Divider(
+                          height: 1,
+                          color: (isDark ? Colors.white : Colors.black)
+                              .withOpacity(0.1),
+                        ),
+                        ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.secondary.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              CupertinoIcons.bell_fill,
+                              color: Theme.of(context).colorScheme.secondary,
+                              size: 20,
+                            ),
+                          ),
+                          title: const Text(
+                            'Уведомления',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Оповещения о долгах',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.5),
+                            ),
+                          ),
+                          trailing: Icon(
+                            CupertinoIcons.chevron_right,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.3),
+                          ),
+                          onTap: () {},
                         ),
                       ],
                     ),
